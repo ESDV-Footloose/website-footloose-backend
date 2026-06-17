@@ -430,6 +430,36 @@ export interface AdminUser extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiHomepageHomepage extends Struct.SingleTypeSchema {
+  collectionName: 'homepages';
+  info: {
+    displayName: 'Homepage';
+    pluralName: 'homepages';
+    singularName: 'homepage';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::homepage.homepage'
+    > &
+      Schema.Attribute.Private;
+    pageSections: Schema.Attribute.DynamicZone<
+      ['page.section', 'page.banner', 'page.big-banner']
+    >;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiNavbarNavbar extends Struct.SingleTypeSchema {
   collectionName: 'navbars';
   info: {
@@ -453,6 +483,36 @@ export interface ApiNavbarNavbar extends Struct.SingleTypeSchema {
     > &
       Schema.Attribute.Private;
     publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiPagePage extends Struct.CollectionTypeSchema {
+  collectionName: 'pages';
+  info: {
+    displayName: 'Page';
+    pluralName: 'pages';
+    singularName: 'page';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<'oneToMany', 'api::page.page'> &
+      Schema.Attribute.Private;
+    metaDescription: Schema.Attribute.Text;
+    pageSections: Schema.Attribute.DynamicZone<['page.section', 'page.banner']>;
+    publishedAt: Schema.Attribute.DateTime;
+    slug: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -970,7 +1030,9 @@ declare module '@strapi/strapi' {
       'admin::transfer-token': AdminTransferToken;
       'admin::transfer-token-permission': AdminTransferTokenPermission;
       'admin::user': AdminUser;
+      'api::homepage.homepage': ApiHomepageHomepage;
       'api::navbar.navbar': ApiNavbarNavbar;
+      'api::page.page': ApiPagePage;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;
       'plugin::i18n.locale': PluginI18NLocale;

@@ -1,0 +1,13 @@
+{
+  "collectionName": "components_page_sections",
+  "info": {
+    "displayName": "Section"
+  },
+  "options": {},
+  "attributes": {
+    "content": {
+      "type": "blocks"
+    }
+  },
+  "config": {}
+}

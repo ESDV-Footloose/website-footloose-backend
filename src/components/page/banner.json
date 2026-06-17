@@ -1,0 +1,24 @@
+{
+  "collectionName": "components_page_banners",
+  "info": {
+    "displayName": "SmallBanner"
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "backgroundImage": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    }
+  },
+  "config": {}
+}

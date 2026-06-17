@@ -1,0 +1,25 @@
+{
+  "collectionName": "components_page_big_banners",
+  "info": {
+    "displayName": "BigBanner"
+  },
+  "options": {},
+  "attributes": {
+    "boardSlogan": {
+      "type": "string",
+      "required": true
+    },
+    "img": {
+      "type": "media",
+      "multiple": false,
+      "required": true,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    }
+  },
+  "config": {}
+}

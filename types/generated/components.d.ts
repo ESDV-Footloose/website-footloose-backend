@@ -25,11 +25,49 @@ export interface NavbarLink extends Struct.ComponentSchema {
   };
 }
 
+export interface PageBanner extends Struct.ComponentSchema {
+  collectionName: 'components_page_banners';
+  info: {
+    displayName: 'SmallBanner';
+  };
+  attributes: {
+    backgroundImage: Schema.Attribute.Media<
+      'images' | 'files' | 'videos' | 'audios'
+    >;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
+  };
+}
+
+export interface PageBigBanner extends Struct.ComponentSchema {
+  collectionName: 'components_page_big_banners';
+  info: {
+    displayName: 'BigBanner';
+  };
+  attributes: {
+    boardSlogan: Schema.Attribute.String & Schema.Attribute.Required;
+    img: Schema.Attribute.Media<'images' | 'files' | 'videos' | 'audios'> &
+      Schema.Attribute.Required;
+  };
+}
+
+export interface PageSection extends Struct.ComponentSchema {
+  collectionName: 'components_page_sections';
+  info: {
+    displayName: 'Section';
+  };
+  attributes: {
+    content: Schema.Attribute.Blocks;
+  };
+}
+
 declare module '@strapi/strapi' {
   export module Public {
     export interface ComponentSchemas {
       'navbar.dropdown': NavbarDropdown;
       'navbar.link': NavbarLink;
+      'page.banner': PageBanner;
+      'page.big-banner': PageBigBanner;
+      'page.section': PageSection;
     }
   }
 }
