@@ -138,6 +138,11 @@
       "type": "boolean",
       "required": true,
       "default": false
+    },
+    "approved": {
+      "type": "boolean",
+      "required": true,
+      "default": false
     }
   }
 }
