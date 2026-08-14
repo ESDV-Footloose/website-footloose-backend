@@ -76,7 +76,7 @@
     },
     "phoneNumber": {
       "type": "string",
-      "required": true
+      "required": false
     },
     "dateOfBirth": {
       "type": "date",
@@ -93,6 +93,19 @@
         "Other institution",
         "Not a student"
       ]
+    },
+    "studentEmail": {
+      "type": "email",
+      "conditions": {
+        "visible": {
+          "!=": [
+            {
+              "var": "studyInstitutionEnum"
+            },
+            "Not a student"
+          ]
+        }
+      }
     },
     "studyInstitutionOther": {
       "type": "string",

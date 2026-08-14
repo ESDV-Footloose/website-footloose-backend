@@ -1023,7 +1023,7 @@ export interface PluginUsersPermissionsUser
       Schema.Attribute.SetMinMaxLength<{
         minLength: 6;
       }>;
-    phoneNumber: Schema.Attribute.String & Schema.Attribute.Required;
+    phoneNumber: Schema.Attribute.String;
     provider: Schema.Attribute.String;
     publishedAt: Schema.Attribute.DateTime;
     resetPasswordToken: Schema.Attribute.String & Schema.Attribute.Private;
@@ -1031,6 +1031,7 @@ export interface PluginUsersPermissionsUser
       'manyToOne',
       'plugin::users-permissions.role'
     >;
+    studentEmail: Schema.Attribute.Email;
     studyInstitutionEnum: Schema.Attribute.Enumeration<
       [
         'Eindhoven University of Technology',
