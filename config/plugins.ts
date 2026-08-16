@@ -13,6 +13,7 @@ const config = ({
           "dateOfBirth",
           "studyInstitutionEnum",
           "studyInstitutionOther",
+          "studentEmail",
           "graduationYear",
           "motivationNotStudent",
         ],
