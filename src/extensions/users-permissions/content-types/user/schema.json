@@ -1,0 +1,161 @@
+{
+  "kind": "collectionType",
+  "collectionName": "up_users",
+  "info": {
+    "name": "user",
+    "description": "",
+    "singularName": "user",
+    "pluralName": "users",
+    "displayName": "User"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "username": {
+      "type": "string",
+      "minLength": 3,
+      "unique": true,
+      "configurable": false,
+      "required": true
+    },
+    "email": {
+      "type": "email",
+      "minLength": 6,
+      "configurable": false,
+      "required": true
+    },
+    "provider": {
+      "type": "string",
+      "configurable": false
+    },
+    "password": {
+      "type": "password",
+      "minLength": 6,
+      "configurable": false,
+      "private": true,
+      "searchable": false
+    },
+    "resetPasswordToken": {
+      "type": "string",
+      "configurable": false,
+      "private": true,
+      "searchable": false
+    },
+    "confirmationToken": {
+      "type": "string",
+      "configurable": false,
+      "private": true,
+      "searchable": false
+    },
+    "confirmed": {
+      "type": "boolean",
+      "default": false,
+      "configurable": false
+    },
+    "blocked": {
+      "type": "boolean",
+      "default": false,
+      "configurable": false
+    },
+    "role": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.role",
+      "inversedBy": "users",
+      "configurable": false
+    },
+    "firstName": {
+      "type": "string",
+      "required": true
+    },
+    "lastName": {
+      "type": "string",
+      "required": true
+    },
+    "phoneNumber": {
+      "type": "string",
+      "required": false
+    },
+    "dateOfBirth": {
+      "type": "date",
+      "required": true,
+      "default": "2005-01-01"
+    },
+    "studyInstitutionEnum": {
+      "type": "enumeration",
+      "required": true,
+      "enum": [
+        "Eindhoven University of Technology",
+        "Fontys University of Applied Sciences Eindhoven",
+        "Design Academy Eindhoven",
+        "Other institution",
+        "Not a student"
+      ]
+    },
+    "studentEmail": {
+      "type": "email",
+      "conditions": {
+        "visible": {
+          "!=": [
+            {
+              "var": "studyInstitutionEnum"
+            },
+            "Not a student"
+          ]
+        }
+      }
+    },
+    "studyInstitutionOther": {
+      "type": "string",
+      "conditions": {
+        "visible": {
+          "==": [
+            {
+              "var": "studyInstitutionEnum"
+            },
+            "Other institution"
+          ]
+        }
+      },
+      "maxLength": 60
+    },
+    "graduationYear": {
+      "type": "integer",
+      "conditions": {
+        "visible": {
+          "==": [
+            {
+              "var": "studyInstitutionEnum"
+            },
+            "Not a student"
+          ]
+        }
+      }
+    },
+    "motivationNotStudent": {
+      "type": "text",
+      "conditions": {
+        "visible": {
+          "==": [
+            {
+              "var": "studyInstitutionEnum"
+            },
+            "Not a student"
+          ]
+        }
+      }
+    },
+    "activeMember": {
+      "type": "boolean",
+      "required": true,
+      "default": false
+    },
+    "approved": {
+      "type": "boolean",
+      "required": true,
+      "default": false
+    }
+  }
+}
