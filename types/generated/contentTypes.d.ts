@@ -1035,6 +1035,7 @@ export interface PluginUsersPermissionsUser
     studyInstitutionEnum: Schema.Attribute.Enumeration<
       [
         'Eindhoven University of Technology',
+        'Eindhoven University of Technology PhD/EngD',
         'Fontys University of Applied Sciences Eindhoven',
         'Design Academy Eindhoven',
         'Other institution',
