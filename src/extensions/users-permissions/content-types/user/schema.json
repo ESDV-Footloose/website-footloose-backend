@@ -88,6 +88,7 @@
       "required": true,
       "enum": [
         "Eindhoven University of Technology",
+        "Eindhoven University of Technology PhD/EngD",
         "Fontys University of Applied Sciences Eindhoven",
         "Design Academy Eindhoven",
         "Other institution",
