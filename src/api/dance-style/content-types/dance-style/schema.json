@@ -1,0 +1,26 @@
+{
+  "kind": "collectionType",
+  "collectionName": "dance_styles",
+  "info": {
+    "singularName": "dance-style",
+    "pluralName": "dance-styles",
+    "displayName": "Dance Style"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "danceCourses": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::dance-course.dance-course",
+      "mappedBy": "danceStyle"
+    }
+  }
+}

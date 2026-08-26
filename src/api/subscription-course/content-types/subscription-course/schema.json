@@ -1,0 +1,42 @@
+{
+  "kind": "collectionType",
+  "collectionName": "subscription_courses",
+  "info": {
+    "singularName": "subscription-course",
+    "pluralName": "subscription-courses",
+    "displayName": "Subscription Course"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "subscriptionFull": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::subscription-full.subscription-full",
+      "inversedBy": "subscriptionCourses"
+    },
+    "danceCourse": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::dance-course.dance-course",
+      "inversedBy": "subscriptionCourses"
+    },
+    "isPriority": {
+      "type": "boolean",
+      "required": true,
+      "default": false
+    },
+    "acceptanceStatus": {
+      "type": "enumeration",
+      "required": true,
+      "default": "pending",
+      "enum": [
+        "pending",
+        "accepted",
+        "rejected"
+      ]
+    }
+  }
+}

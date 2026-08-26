@@ -157,6 +157,12 @@
       "type": "boolean",
       "required": true,
       "default": false
+    },
+    "subscriptionFulls": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::subscription-full.subscription-full",
+      "mappedBy": "member"
     }
   }
 }

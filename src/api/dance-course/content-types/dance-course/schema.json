@@ -1,0 +1,31 @@
+{
+  "kind": "collectionType",
+  "collectionName": "dance_courses",
+  "info": {
+    "singularName": "dance-course",
+    "pluralName": "dance-courses",
+    "displayName": "Dance Course"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "level": {
+      "type": "string",
+      "required": true
+    },
+    "danceStyle": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::dance-style.dance-style",
+      "inversedBy": "danceCourses"
+    },
+    "subscriptionCourses": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::subscription-course.subscription-course",
+      "mappedBy": "danceCourse"
+    }
+  }
+}
