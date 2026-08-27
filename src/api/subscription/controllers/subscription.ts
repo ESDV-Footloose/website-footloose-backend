@@ -164,7 +164,6 @@ export default factories.createCoreController(
           "Dance Style",
           "Level",
           "Priority",
-          "Status",
           "Agreed To Pay",
         ],
       ];
@@ -181,7 +180,6 @@ export default factories.createCoreController(
             course.style,
             course.level,
             priorityIds.has(course.documentId) ? "Yes" : "No",
-            sub.status,
             sub.agreedToPay ? "Yes" : "No",
           ]);
         }

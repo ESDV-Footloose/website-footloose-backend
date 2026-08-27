@@ -669,9 +669,6 @@ export interface ApiSubscriptionSubscription
     >;
     publishedAt: Schema.Attribute.DateTime;
     semester: Schema.Attribute.Relation<'manyToOne', 'api::semester.semester'>;
-    status: Schema.Attribute.Enumeration<['pending', 'accepted', 'rejected']> &
-      Schema.Attribute.Required &
-      Schema.Attribute.DefaultTo<'pending'>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;

@@ -39,16 +39,6 @@
       "relation": "manyToMany",
       "target": "api::dance-course.dance-course",
       "inversedBy": "prioritySubscriptions"
-    },
-    "status": {
-      "type": "enumeration",
-      "required": true,
-      "default": "pending",
-      "enum": [
-        "pending",
-        "accepted",
-        "rejected"
-      ]
     }
   }
 }
