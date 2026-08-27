@@ -25,10 +25,10 @@
       "required": true,
       "default": false
     },
-    "subscriptionFulls": {
+    "subscriptions": {
       "type": "relation",
       "relation": "oneToMany",
-      "target": "api::subscription-full.subscription-full",
+      "target": "api::subscription.subscription",
       "mappedBy": "semester"
     }
   }

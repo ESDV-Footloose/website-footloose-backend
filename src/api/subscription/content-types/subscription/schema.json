@@ -1,0 +1,54 @@
+{
+  "kind": "collectionType",
+  "collectionName": "subscription_fulls",
+  "info": {
+    "singularName": "subscription",
+    "pluralName": "subscriptions",
+    "displayName": "Subscription"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "member": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "subscriptions"
+    },
+    "semester": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::semester.semester",
+      "inversedBy": "subscriptions"
+    },
+    "agreedToPay": {
+      "type": "boolean",
+      "required": true,
+      "default": false
+    },
+    "danceCourses": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::dance-course.dance-course",
+      "inversedBy": "subscriptions"
+    },
+    "priorityCourses": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::dance-course.dance-course",
+      "inversedBy": "prioritySubscriptions"
+    },
+    "status": {
+      "type": "enumeration",
+      "required": true,
+      "default": "pending",
+      "enum": [
+        "pending",
+        "accepted",
+        "rejected"
+      ]
+    }
+  }
+}

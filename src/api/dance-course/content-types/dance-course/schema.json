@@ -11,21 +11,47 @@
   },
   "pluginOptions": {},
   "attributes": {
+    "style": {
+      "type": "enumeration",
+      "required": true,
+      "enum": [
+        "Bachata",
+        "Ballet",
+        "Ballroom",
+        "Feminine",
+        "Hiphop",
+        "Jazz",
+        "Modern",
+        "Salsa"
+      ]
+    },
     "level": {
-      "type": "string",
-      "required": true
+      "type": "enumeration",
+      "required": true,
+      "enum": [
+        "one (1)",
+        "two (2)",
+        "three (3)",
+        "four (4)",
+        "demoteam",
+        "bronze",
+        "silver",
+        "silverstar",
+        "gold",
+        "topclass"
+      ]
     },
-    "danceStyle": {
+    "subscriptions": {
       "type": "relation",
-      "relation": "manyToOne",
-      "target": "api::dance-style.dance-style",
-      "inversedBy": "danceCourses"
+      "relation": "manyToMany",
+      "target": "api::subscription.subscription",
+      "mappedBy": "danceCourses"
     },
-    "subscriptionCourses": {
+    "prioritySubscriptions": {
       "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::subscription-course.subscription-course",
-      "mappedBy": "danceCourse"
+      "relation": "manyToMany",
+      "target": "api::subscription.subscription",
+      "mappedBy": "priorityCourses"
     }
   }
 }

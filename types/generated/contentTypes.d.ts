@@ -455,56 +455,49 @@ export interface ApiDanceCourseDanceCourse extends Struct.CollectionTypeSchema {
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    danceStyle: Schema.Attribute.Relation<
-      'manyToOne',
-      'api::dance-style.dance-style'
-    >;
-    level: Schema.Attribute.String & Schema.Attribute.Required;
+    level: Schema.Attribute.Enumeration<
+      [
+        'one (1)',
+        'two (2)',
+        'three (3)',
+        'four (4)',
+        'demoteam',
+        'bronze',
+        'silver',
+        'silverstar',
+        'gold',
+        'topclass',
+      ]
+    > &
+      Schema.Attribute.Required;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
       'api::dance-course.dance-course'
     > &
       Schema.Attribute.Private;
+    prioritySubscriptions: Schema.Attribute.Relation<
+      'manyToMany',
+      'api::subscription.subscription'
+    >;
     publishedAt: Schema.Attribute.DateTime;
-    subscriptionCourses: Schema.Attribute.Relation<
-      'oneToMany',
-      'api::subscription-course.subscription-course'
-    >;
-    updatedAt: Schema.Attribute.DateTime;
-    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-  };
-}
-
-export interface ApiDanceStyleDanceStyle extends Struct.CollectionTypeSchema {
-  collectionName: 'dance_styles';
-  info: {
-    displayName: 'Dance Style';
-    pluralName: 'dance-styles';
-    singularName: 'dance-style';
-  };
-  options: {
-    draftAndPublish: true;
-  };
-  attributes: {
-    createdAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    danceCourses: Schema.Attribute.Relation<
-      'oneToMany',
-      'api::dance-course.dance-course'
-    >;
-    locale: Schema.Attribute.String & Schema.Attribute.Private;
-    localizations: Schema.Attribute.Relation<
-      'oneToMany',
-      'api::dance-style.dance-style'
+    style: Schema.Attribute.Enumeration<
+      [
+        'Bachata',
+        'Ballet',
+        'Ballroom',
+        'Feminine',
+        'Hiphop',
+        'Jazz',
+        'Modern',
+        'Salsa',
+      ]
     > &
-      Schema.Attribute.Private;
-    name: Schema.Attribute.String &
-      Schema.Attribute.Required &
-      Schema.Attribute.Unique;
-    publishedAt: Schema.Attribute.DateTime;
+      Schema.Attribute.Required;
+    subscriptions: Schema.Attribute.Relation<
+      'manyToMany',
+      'api::subscription.subscription'
+    >;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -628,9 +621,9 @@ export interface ApiSemesterSemester extends Struct.CollectionTypeSchema {
       Schema.Attribute.Unique;
     publishedAt: Schema.Attribute.DateTime;
     registrationDeadline: Schema.Attribute.DateTime & Schema.Attribute.Required;
-    subscriptionFulls: Schema.Attribute.Relation<
+    subscriptions: Schema.Attribute.Relation<
       'oneToMany',
-      'api::subscription-full.subscription-full'
+      'api::subscription.subscription'
     >;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -638,60 +631,16 @@ export interface ApiSemesterSemester extends Struct.CollectionTypeSchema {
   };
 }
 
-export interface ApiSubscriptionCourseSubscriptionCourse
-  extends Struct.CollectionTypeSchema {
-  collectionName: 'subscription_courses';
-  info: {
-    displayName: 'Subscription Course';
-    pluralName: 'subscription-courses';
-    singularName: 'subscription-course';
-  };
-  options: {
-    draftAndPublish: true;
-  };
-  attributes: {
-    acceptanceStatus: Schema.Attribute.Enumeration<
-      ['pending', 'accepted', 'rejected']
-    > &
-      Schema.Attribute.Required &
-      Schema.Attribute.DefaultTo<'pending'>;
-    createdAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    danceCourse: Schema.Attribute.Relation<
-      'manyToOne',
-      'api::dance-course.dance-course'
-    >;
-    isPriority: Schema.Attribute.Boolean &
-      Schema.Attribute.Required &
-      Schema.Attribute.DefaultTo<false>;
-    locale: Schema.Attribute.String & Schema.Attribute.Private;
-    localizations: Schema.Attribute.Relation<
-      'oneToMany',
-      'api::subscription-course.subscription-course'
-    > &
-      Schema.Attribute.Private;
-    publishedAt: Schema.Attribute.DateTime;
-    subscriptionFull: Schema.Attribute.Relation<
-      'manyToOne',
-      'api::subscription-full.subscription-full'
-    >;
-    updatedAt: Schema.Attribute.DateTime;
-    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-  };
-}
-
-export interface ApiSubscriptionFullSubscriptionFull
+export interface ApiSubscriptionSubscription
   extends Struct.CollectionTypeSchema {
   collectionName: 'subscription_fulls';
   info: {
-    displayName: 'Subscription Full';
-    pluralName: 'subscription-fulls';
-    singularName: 'subscription-full';
+    displayName: 'Subscription';
+    pluralName: 'subscriptions';
+    singularName: 'subscription';
   };
   options: {
-    draftAndPublish: true;
+    draftAndPublish: false;
   };
   attributes: {
     agreedToPay: Schema.Attribute.Boolean &
@@ -700,22 +649,29 @@ export interface ApiSubscriptionFullSubscriptionFull
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    danceCourses: Schema.Attribute.Relation<
+      'manyToMany',
+      'api::dance-course.dance-course'
+    >;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
-      'api::subscription-full.subscription-full'
+      'api::subscription.subscription'
     > &
       Schema.Attribute.Private;
     member: Schema.Attribute.Relation<
       'manyToOne',
       'plugin::users-permissions.user'
     >;
+    priorityCourses: Schema.Attribute.Relation<
+      'manyToMany',
+      'api::dance-course.dance-course'
+    >;
     publishedAt: Schema.Attribute.DateTime;
     semester: Schema.Attribute.Relation<'manyToOne', 'api::semester.semester'>;
-    subscriptionCourses: Schema.Attribute.Relation<
-      'oneToMany',
-      'api::subscription-course.subscription-course'
-    >;
+    status: Schema.Attribute.Enumeration<['pending', 'accepted', 'rejected']> &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'pending'>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1239,9 +1195,9 @@ export interface PluginUsersPermissionsUser
       Schema.Attribute.SetMinMaxLength<{
         maxLength: 60;
       }>;
-    subscriptionFulls: Schema.Attribute.Relation<
+    subscriptions: Schema.Attribute.Relation<
       'oneToMany',
-      'api::subscription-full.subscription-full'
+      'api::subscription.subscription'
     >;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -1267,13 +1223,11 @@ declare module '@strapi/strapi' {
       'admin::transfer-token-permission': AdminTransferTokenPermission;
       'admin::user': AdminUser;
       'api::dance-course.dance-course': ApiDanceCourseDanceCourse;
-      'api::dance-style.dance-style': ApiDanceStyleDanceStyle;
       'api::homepage.homepage': ApiHomepageHomepage;
       'api::navbar.navbar': ApiNavbarNavbar;
       'api::page.page': ApiPagePage;
       'api::semester.semester': ApiSemesterSemester;
-      'api::subscription-course.subscription-course': ApiSubscriptionCourseSubscriptionCourse;
-      'api::subscription-full.subscription-full': ApiSubscriptionFullSubscriptionFull;
+      'api::subscription.subscription': ApiSubscriptionSubscription;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;
       'plugin::i18n.locale': PluginI18NLocale;
