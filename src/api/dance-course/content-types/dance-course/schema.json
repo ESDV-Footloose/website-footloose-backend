@@ -41,17 +41,10 @@
         "topclass"
       ]
     },
-    "subscriptions": {
-      "type": "relation",
-      "relation": "manyToMany",
-      "target": "api::subscription.subscription",
-      "mappedBy": "danceCourses"
-    },
-    "prioritySubscriptions": {
-      "type": "relation",
-      "relation": "manyToMany",
-      "target": "api::subscription.subscription",
-      "mappedBy": "priorityCourses"
+    "isPartnerDance": {
+      "type": "boolean",
+      "required": true,
+      "default": false
     }
   }
 }

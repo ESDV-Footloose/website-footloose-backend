@@ -441,6 +441,48 @@ export interface AdminUser extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiCourseSelectionCourseSelection
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'course_selections';
+  info: {
+    displayName: 'Course Selection';
+    pluralName: 'course-selections';
+    singularName: 'course-selection';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    danceCourse: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::dance-course.dance-course'
+    >;
+    isPriority: Schema.Attribute.Boolean &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<false>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::course-selection.course-selection'
+    > &
+      Schema.Attribute.Private;
+    partnerName: Schema.Attribute.String;
+    publishedAt: Schema.Attribute.DateTime;
+    role: Schema.Attribute.Enumeration<['leader', 'follower', 'solo']> &
+      Schema.Attribute.Required;
+    subscription: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::subscription.subscription'
+    >;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiDanceCourseDanceCourse extends Struct.CollectionTypeSchema {
   collectionName: 'dance_courses';
   info: {
@@ -455,6 +497,9 @@ export interface ApiDanceCourseDanceCourse extends Struct.CollectionTypeSchema {
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    isPartnerDance: Schema.Attribute.Boolean &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<false>;
     level: Schema.Attribute.Enumeration<
       [
         'one (1)',
@@ -476,10 +521,6 @@ export interface ApiDanceCourseDanceCourse extends Struct.CollectionTypeSchema {
       'api::dance-course.dance-course'
     > &
       Schema.Attribute.Private;
-    prioritySubscriptions: Schema.Attribute.Relation<
-      'manyToMany',
-      'api::subscription.subscription'
-    >;
     publishedAt: Schema.Attribute.DateTime;
     style: Schema.Attribute.Enumeration<
       [
@@ -494,10 +535,6 @@ export interface ApiDanceCourseDanceCourse extends Struct.CollectionTypeSchema {
       ]
     > &
       Schema.Attribute.Required;
-    subscriptions: Schema.Attribute.Relation<
-      'manyToMany',
-      'api::subscription.subscription'
-    >;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -646,13 +683,13 @@ export interface ApiSubscriptionSubscription
     agreedToPay: Schema.Attribute.Boolean &
       Schema.Attribute.Required &
       Schema.Attribute.DefaultTo<false>;
+    courseSelections: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::course-selection.course-selection'
+    >;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    danceCourses: Schema.Attribute.Relation<
-      'manyToMany',
-      'api::dance-course.dance-course'
-    >;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
@@ -662,10 +699,6 @@ export interface ApiSubscriptionSubscription
     member: Schema.Attribute.Relation<
       'manyToOne',
       'plugin::users-permissions.user'
-    >;
-    priorityCourses: Schema.Attribute.Relation<
-      'manyToMany',
-      'api::dance-course.dance-course'
     >;
     publishedAt: Schema.Attribute.DateTime;
     semester: Schema.Attribute.Relation<'manyToOne', 'api::semester.semester'>;
@@ -1219,6 +1252,7 @@ declare module '@strapi/strapi' {
       'admin::transfer-token': AdminTransferToken;
       'admin::transfer-token-permission': AdminTransferTokenPermission;
       'admin::user': AdminUser;
+      'api::course-selection.course-selection': ApiCourseSelectionCourseSelection;
       'api::dance-course.dance-course': ApiDanceCourseDanceCourse;
       'api::homepage.homepage': ApiHomepageHomepage;
       'api::navbar.navbar': ApiNavbarNavbar;

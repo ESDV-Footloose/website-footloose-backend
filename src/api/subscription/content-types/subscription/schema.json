@@ -28,17 +28,11 @@
       "required": true,
       "default": false
     },
-    "danceCourses": {
+    "courseSelections": {
       "type": "relation",
-      "relation": "manyToMany",
-      "target": "api::dance-course.dance-course",
-      "inversedBy": "subscriptions"
-    },
-    "priorityCourses": {
-      "type": "relation",
-      "relation": "manyToMany",
-      "target": "api::dance-course.dance-course",
-      "inversedBy": "prioritySubscriptions"
+      "relation": "oneToMany",
+      "target": "api::course-selection.course-selection",
+      "mappedBy": "subscription"
     }
   }
 }

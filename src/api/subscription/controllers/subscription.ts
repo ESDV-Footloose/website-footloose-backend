@@ -1,5 +1,12 @@
 import { factories } from "@strapi/strapi";
 
+type SelectionInput = {
+  courseId: string;
+  role: "leader" | "follower" | "solo";
+  partnerName?: string;
+  isPriority?: boolean;
+};
+
 export default factories.createCoreController(
   "api::subscription.subscription",
   ({ strapi }) => ({
@@ -32,14 +39,18 @@ export default factories.createCoreController(
               member: { id: userId },
               semester: { documentId: semester.documentId },
             },
-            populate: ["danceCourses", "priorityCourses"],
+            populate: ["courseSelections", "courseSelections.danceCourse"],
           });
 
         if (existing[0]) {
           subscription = {
-            courseIds: existing[0].danceCourses.map((c: any) => c.documentId),
-            priorityCourseIds: existing[0].priorityCourses.map(
-              (c: any) => c.documentId,
+            selections: ((existing[0] as any).courseSelections ?? []).map(
+              (s: any) => ({
+                courseId: s.danceCourse.documentId,
+                role: s.role,
+                partnerName: s.partnerName ?? null,
+                isPriority: s.isPriority,
+              }),
             ),
           };
         }
@@ -60,6 +71,7 @@ export default factories.createCoreController(
             documentId: c.documentId,
             style: c.style,
             level: c.level,
+            isPartnerDance: c.isPartnerDance,
           })),
           subscription,
         },
@@ -68,13 +80,12 @@ export default factories.createCoreController(
 
     async updateMe(ctx) {
       const userId = ctx.state.user.id;
-      const { courseIds, priorityCourseIds, agreedToPay } =
-        ctx.request.body ?? {};
+      const { selections, agreedToPay } = ctx.request.body ?? {};
 
       if (agreedToPay !== true) {
         return ctx.badRequest("You must agree to pay if admitted.");
       }
-      if (!Array.isArray(courseIds) || courseIds.length === 0) {
+      if (!Array.isArray(selections) || selections.length === 0) {
         return ctx.badRequest("Select at least one course.");
       }
 
@@ -87,28 +98,51 @@ export default factories.createCoreController(
         return ctx.badRequest("Registration deadline has passed.");
       }
 
-      const priorityIds: string[] = priorityCourseIds ?? [];
-      if (priorityIds.some((id) => !courseIds.includes(id))) {
-        return ctx.badRequest(
-          "Priority pick must be one of the selected courses.",
-        );
+      const courseIds = selections.map((s: SelectionInput) => s.courseId);
+      const courses = await strapi
+        .documents("api::dance-course.dance-course")
+        .findMany({ filters: { documentId: { $in: courseIds } } });
+      const courseById = new Map(courses.map((c: any) => [c.documentId, c]));
+
+      // Per-selection validation: role/partner name rules, based on
+      // whether the course is a partner dance or a solo dance.
+      for (const sel of selections as SelectionInput[]) {
+        const course = courseById.get(sel.courseId);
+        if (!course) return ctx.badRequest("Unknown course selected.");
+
+        if (course.isPartnerDance) {
+          if (sel.role !== "leader" && sel.role !== "follower") {
+            return ctx.badRequest(
+              `${course.style} ${course.level} requires a leader/follower role.`,
+            );
+          }
+          if (!sel.partnerName || !sel.partnerName.trim()) {
+            return ctx.badRequest(
+              `Enter your partner's name for ${course.style} ${course.level}.`,
+            );
+          }
+        } else if (sel.role !== "solo") {
+          return ctx.badRequest(
+            `${course.style} ${course.level} is a solo dance.`,
+          );
+        }
       }
 
       const userFull = await strapi
         .documents("plugin::users-permissions.user")
         .findOne({ documentId: ctx.state.user.documentId });
 
+      const priorityIds = (selections as SelectionInput[])
+        .filter((s) => s.isPriority)
+        .map((s) => s.courseId);
+
       if (priorityIds.length > 0 && !userFull.activeMember) {
         return ctx.forbidden("Only active members can set priority picks.");
       }
 
-      const courses = await strapi
-        .documents("api::dance-course.dance-course")
-        .findMany({ filters: { documentId: { $in: courseIds } } });
-
       const styleCounts: Record<string, number> = {};
       for (const id of priorityIds) {
-        const course = courses.find((c: any) => c.documentId === id);
+        const course = courseById.get(id);
         if (!course) continue;
         styleCounts[course.style] = (styleCounts[course.style] ?? 0) + 1;
       }
@@ -125,35 +159,107 @@ export default factories.createCoreController(
             member: { id: userId },
             semester: { documentId: semester.documentId },
           },
+          populate: ["courseSelections"],
         });
 
-      const data = {
-        member: userId,
-        semester: semester.documentId,
-        danceCourses: courseIds,
-        priorityCourses: priorityIds,
-        agreedToPay: true,
-        status: "pending" as const,
-      };
+      let subscriptionDocumentId: string;
 
       if (existing[0]) {
-        await strapi
+        subscriptionDocumentId = existing[0].documentId;
+        await strapi.documents("api::subscription.subscription").update({
+          documentId: subscriptionDocumentId,
+          data: { agreedToPay: true },
+        });
+
+        // Re-fetch the relation with danceCourse populated so rows can be matched by course.
+        const existingFull = await strapi
           .documents("api::subscription.subscription")
-          .update({ documentId: existing[0].documentId, data });
+          .findOne({
+            documentId: subscriptionDocumentId,
+            populate: ["courseSelections", "courseSelections.danceCourse"],
+          });
+        const existingRows: any[] =
+          (existingFull as any)?.courseSelections ?? [];
+        const existingRowByCourseId = new Map(
+          existingRows.map((s: any) => [s.danceCourse.documentId, s]),
+        );
+
+        const keepIds = new Set(courseIds);
+        for (const row of existingRows) {
+          if (!keepIds.has(row.danceCourse.documentId)) {
+            await strapi
+              .documents("api::course-selection.course-selection")
+              .delete({ documentId: row.documentId });
+          }
+        }
+
+        for (const sel of selections as SelectionInput[]) {
+          const existingRow = existingRowByCourseId.get(sel.courseId);
+          const data = {
+            role: sel.role,
+            partnerName: sel.role === "solo" ? null : sel.partnerName?.trim(),
+            isPriority: Boolean(sel.isPriority),
+          };
+          if (existingRow) {
+            await strapi
+              .documents("api::course-selection.course-selection")
+              .update({
+                documentId: existingRow.documentId,
+                data,
+              });
+          } else {
+            await strapi
+              .documents("api::course-selection.course-selection")
+              .create({
+                data: {
+                  ...data,
+                  subscription: subscriptionDocumentId,
+                  danceCourse: sel.courseId,
+                },
+              });
+          }
+        }
       } else {
-        await strapi
+        const created = await strapi
           .documents("api::subscription.subscription")
-          .create({ data });
+          .create({
+            data: {
+              member: userId,
+              semester: semester.documentId,
+              agreedToPay: true,
+            },
+          });
+        subscriptionDocumentId = created.documentId;
+
+        for (const sel of selections as SelectionInput[]) {
+          await strapi
+            .documents("api::course-selection.course-selection")
+            .create({
+              data: {
+                subscription: subscriptionDocumentId,
+                danceCourse: sel.courseId,
+                role: sel.role,
+                partnerName:
+                  sel.role === "solo" ? null : sel.partnerName?.trim(),
+                isPriority: Boolean(sel.isPriority),
+              },
+            });
+        }
       }
 
-      ctx.body = { data: { courseIds, priorityCourseIds: priorityIds } };
+      ctx.body = { data: { selections } };
     },
 
     async export(ctx) {
       const subscriptions = await strapi
         .documents("api::subscription.subscription")
         .findMany({
-          populate: ["member", "semester", "danceCourses", "priorityCourses"],
+          populate: [
+            "member",
+            "semester",
+            "courseSelections",
+            "courseSelections.danceCourse",
+          ],
         });
 
       const rows: string[][] = [
@@ -163,23 +269,24 @@ export default factories.createCoreController(
           "Semester",
           "Dance Style",
           "Level",
+          "Role",
+          "Partner Name",
           "Priority",
           "Agreed To Pay",
         ],
       ];
 
-      for (const sub of subscriptions) {
-        const priorityIds = new Set(
-          (sub.priorityCourses ?? []).map((c: any) => c.documentId),
-        );
-        for (const course of sub.danceCourses ?? []) {
+      for (const sub of subscriptions as any[]) {
+        for (const sel of sub.courseSelections ?? []) {
           rows.push([
             `${sub.member?.firstName ?? ""} ${sub.member?.lastName ?? ""}`.trim(),
             sub.member?.email ?? "",
             sub.semester?.name ?? "",
-            course.style,
-            course.level,
-            priorityIds.has(course.documentId) ? "Yes" : "No",
+            sel.danceCourse?.style ?? "",
+            sel.danceCourse?.level ?? "",
+            sel.role,
+            sel.partnerName ?? "",
+            sel.isPriority ? "Yes" : "No",
             sub.agreedToPay ? "Yes" : "No",
           ]);
         }
