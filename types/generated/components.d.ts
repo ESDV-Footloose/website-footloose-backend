@@ -50,6 +50,17 @@ export interface PageBigBanner extends Struct.ComponentSchema {
   };
 }
 
+export interface PageEventsSection extends Struct.ComponentSchema {
+  collectionName: 'components_page_events_sections';
+  info: {
+    displayName: 'Events Section';
+    icon: 'calendar';
+  };
+  attributes: {
+    heading: Schema.Attribute.String;
+  };
+}
+
 export interface PageSection extends Struct.ComponentSchema {
   collectionName: 'components_page_sections';
   info: {
@@ -67,6 +78,7 @@ declare module '@strapi/strapi' {
       'navbar.link': NavbarLink;
       'page.banner': PageBanner;
       'page.big-banner': PageBigBanner;
+      'page.events-section': PageEventsSection;
       'page.section': PageSection;
     }
   }

@@ -1,0 +1,13 @@
+{
+  "collectionName": "components_page_events_sections",
+  "info": {
+    "displayName": "Events Section",
+    "icon": "calendar"
+  },
+  "options": {},
+  "attributes": {
+    "heading": {
+      "type": "string"
+    }
+  }
+}
