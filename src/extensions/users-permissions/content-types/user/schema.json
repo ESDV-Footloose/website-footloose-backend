@@ -157,6 +157,12 @@
       "type": "boolean",
       "required": true,
       "default": false
+    },
+    "eventAttendances": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::event.event",
+      "mappedBy": "attendees"
     }
   }
 }
