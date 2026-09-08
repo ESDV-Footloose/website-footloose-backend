@@ -34,6 +34,13 @@ interface FullSubscription {
 }
 
 /**
+ * The shape of the event argument Strapi passes into a content-type's lifecycle hooks.
+ */
+interface SubscriptionLifecycleEvent {
+  result: { documentId: string };
+}
+
+/**
  * Loads a full subscription from Strapi with member and dance courses.
  *
  * @param documentId The Strapi document ID of the subscription.
@@ -91,7 +98,7 @@ function buildCourseList(subscription: FullSubscription): CourseListItem[] {
  *
  * @param documentId The Strapi document ID of the subscription.
  */
-function notifySubscription(documentId: string) {
+function notifySubscription(documentId: string): void {
   setImmediate(async () => {
     try {
       const full = await loadFullSubscription(documentId);
@@ -106,7 +113,8 @@ function notifySubscription(documentId: string) {
         courses,
       });
     } catch (err) {
-      strapi.log.error("subscriptionSaved email failed", err);
+      const message = err instanceof Error ? err.message : String(err);
+      strapi.log.error(`subscriptionSaved email failed: ${message}`);
     }
   });
 }
@@ -116,10 +124,10 @@ function notifySubscription(documentId: string) {
  * a subscription is created or updated.
  */
 export default {
-  async afterCreate(event: any) {
+  afterCreate(event: SubscriptionLifecycleEvent) {
     notifySubscription(event.result.documentId);
   },
-  async afterUpdate(event: any) {
+  afterUpdate(event: SubscriptionLifecycleEvent) {
     notifySubscription(event.result.documentId);
   },
 };
