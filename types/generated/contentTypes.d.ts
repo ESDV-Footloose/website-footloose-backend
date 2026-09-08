@@ -512,6 +512,7 @@ export interface ApiDanceCourseDanceCourse extends Struct.CollectionTypeSchema {
         'silverstar',
         'gold',
         'topclass',
+        'alumni',
       ]
     > &
       Schema.Attribute.Required;
