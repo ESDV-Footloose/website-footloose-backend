@@ -7,6 +7,10 @@ type SelectionInput = {
   isPriority?: boolean;
 };
 
+// Must start with a letter, then letters/spaces/apostrophes/periods/hyphens.
+// Protection against injections.
+const PARTNER_NAME_PATTERN = /^\p{L}[\p{L}\s'.-]{0,99}$/u;
+
 export default factories.createCoreController(
   "api::subscription.subscription",
   ({ strapi }) => ({
@@ -19,7 +23,10 @@ export default factories.createCoreController(
 
       const semesters = await strapi
         .documents("api::semester.semester")
-        .findMany({ filters: { isActive: true } });
+        .findMany({
+          filters: { isActive: true },
+          sort: ["registrationDeadline:desc"],
+        });
       const semester = semesters[0] ?? null;
 
       const courses = await strapi
@@ -91,7 +98,10 @@ export default factories.createCoreController(
 
       const semesters = await strapi
         .documents("api::semester.semester")
-        .findMany({ filters: { isActive: true } });
+        .findMany({
+          filters: { isActive: true },
+          sort: ["registrationDeadline:desc"],
+        });
       const semester = semesters[0];
       if (!semester) return ctx.badRequest("No active semester.");
       if (new Date(semester.registrationDeadline) < new Date()) {
@@ -119,6 +129,11 @@ export default factories.createCoreController(
           if (!sel.partnerName || !sel.partnerName.trim()) {
             return ctx.badRequest(
               `Enter your partner's name for ${course.style} ${course.level}.`,
+            );
+          }
+          if (!PARTNER_NAME_PATTERN.test(sel.partnerName.trim())) {
+            return ctx.badRequest(
+              `Partner name for ${course.style} ${course.level} must start with a letter and contain only letters, spaces, hyphens, apostrophes, or periods.`,
             );
           }
         } else if (sel.role !== "solo") {
@@ -292,9 +307,18 @@ export default factories.createCoreController(
         }
       }
 
+      // Prevents CSV/formula injection
+      const sanitizeCsvCell = (value: string): string =>
+        /^[=+\-@\t\r]/.test(value) ? `'${value}` : value;
+
       const csv = rows
         .map((r) =>
-          r.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(","),
+          r
+            .map(
+              (cell) =>
+                `"${sanitizeCsvCell(String(cell)).replace(/"/g, '""')}"`,
+            )
+            .join(","),
         )
         .join("\n");
 
