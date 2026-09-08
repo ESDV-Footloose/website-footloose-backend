@@ -10,7 +10,6 @@ export default {
       method: "GET",
       path: "/subscriptions/export",
       handler: "subscription.export",
-      config: { policies: ["global::is-board"] },
     },
   ],
 };
