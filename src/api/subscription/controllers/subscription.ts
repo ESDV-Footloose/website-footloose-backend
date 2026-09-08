@@ -11,6 +11,33 @@ type SelectionInput = {
 // Protection against injections.
 const PARTNER_NAME_PATTERN = /^\p{L}[\p{L}\s'.-]{0,99}$/u;
 
+/** In-process mutex, keyed by `${userId}:${semesterDocumentId}`. Serializes
+ * concurrent updateMe calls for the same member+semester so the "look up
+ * existing subscription, then create-or-update" sequence can't race and
+ * create two subscription rows for the same member+semester.
+ */
+const subscriptionLocks = new Map<string, Promise<unknown>>();
+
+/**
+ * Serializes asynchronous operations for a given subscription key.
+ *
+ * @param key Unique key identifying the subscription being locked.
+ * @param fn Asynchronous operation to execute once previous operations for the same key are done.
+ * @returns A promise that resolves or rejects with the result of fn.
+ */
+function withSubscriptionLock<T>(
+  key: string,
+  fn: () => Promise<T>,
+): Promise<T> {
+  const previous = subscriptionLocks.get(key) ?? Promise.resolve();
+  const run = previous.then(fn, fn);
+  subscriptionLocks.set(
+    key,
+    run.catch(() => {}),
+  );
+  return run;
+}
+
 export default factories.createCoreController(
   "api::subscription.subscription",
   ({ strapi }) => ({
@@ -167,115 +194,132 @@ export default factories.createCoreController(
         );
       }
 
-      const existing = await strapi
-        .documents("api::subscription.subscription")
-        .findMany({
-          filters: {
-            member: { id: userId },
-            semester: { documentId: semester.documentId },
-          },
-          populate: ["courseSelections"],
-        });
+      await withSubscriptionLock(
+        `${userId}:${semester.documentId}`,
+        async () => {
+          const existing = await strapi
+            .documents("api::subscription.subscription")
+            .findMany({
+              filters: {
+                member: { id: userId },
+                semester: { documentId: semester.documentId },
+              },
+              populate: ["courseSelections"],
+            });
 
-      let subscriptionDocumentId: string;
+          let subscriptionDocumentId: string;
 
-      if (existing[0]) {
-        subscriptionDocumentId = existing[0].documentId;
-        await strapi.documents("api::subscription.subscription").update({
-          documentId: subscriptionDocumentId,
-          data: { agreedToPay: true },
-        });
+          if (existing[0]) {
+            subscriptionDocumentId = existing[0].documentId;
+            await strapi.documents("api::subscription.subscription").update({
+              documentId: subscriptionDocumentId,
+              data: { agreedToPay: true },
+            });
 
-        // Re-fetch the relation with danceCourse populated so rows can be matched by course.
-        const existingFull = await strapi
-          .documents("api::subscription.subscription")
-          .findOne({
-            documentId: subscriptionDocumentId,
-            populate: ["courseSelections", "courseSelections.danceCourse"],
-          });
-        const existingRows: any[] =
-          (existingFull as any)?.courseSelections ?? [];
-        const existingRowByCourseId = new Map(
-          existingRows.map((s: any) => [s.danceCourse.documentId, s]),
-        );
-
-        const keepIds = new Set(courseIds);
-        for (const row of existingRows) {
-          if (!keepIds.has(row.danceCourse.documentId)) {
-            await strapi
-              .documents("api::course-selection.course-selection")
-              .delete({ documentId: row.documentId });
-          }
-        }
-
-        for (const sel of selections as SelectionInput[]) {
-          const existingRow = existingRowByCourseId.get(sel.courseId);
-          const data = {
-            role: sel.role,
-            partnerName: sel.role === "solo" ? null : sel.partnerName?.trim(),
-            isPriority: Boolean(sel.isPriority),
-          };
-          if (existingRow) {
-            await strapi
-              .documents("api::course-selection.course-selection")
-              .update({
-                documentId: existingRow.documentId,
-                data,
+            // Re-fetch the relation with danceCourse populated so rows can be matched by course.
+            const existingFull = await strapi
+              .documents("api::subscription.subscription")
+              .findOne({
+                documentId: subscriptionDocumentId,
+                populate: ["courseSelections", "courseSelections.danceCourse"],
               });
-          } else {
-            await strapi
-              .documents("api::course-selection.course-selection")
-              .create({
-                data: {
-                  ...data,
-                  subscription: subscriptionDocumentId,
-                  danceCourse: sel.courseId,
-                },
-              });
-          }
-        }
-      } else {
-        const created = await strapi
-          .documents("api::subscription.subscription")
-          .create({
-            data: {
-              member: userId,
-              semester: semester.documentId,
-              agreedToPay: true,
-            },
-          });
-        subscriptionDocumentId = created.documentId;
+            const existingRows: any[] =
+              (existingFull as any)?.courseSelections ?? [];
+            const existingRowByCourseId = new Map(
+              existingRows.map((s: any) => [s.danceCourse.documentId, s]),
+            );
 
-        for (const sel of selections as SelectionInput[]) {
-          await strapi
-            .documents("api::course-selection.course-selection")
-            .create({
-              data: {
-                subscription: subscriptionDocumentId,
-                danceCourse: sel.courseId,
+            const keepIds = new Set(courseIds);
+            for (const row of existingRows) {
+              if (!keepIds.has(row.danceCourse.documentId)) {
+                await strapi
+                  .documents("api::course-selection.course-selection")
+                  .delete({ documentId: row.documentId });
+              }
+            }
+
+            for (const sel of selections as SelectionInput[]) {
+              const existingRow = existingRowByCourseId.get(sel.courseId);
+              const data = {
                 role: sel.role,
                 partnerName:
                   sel.role === "solo" ? null : sel.partnerName?.trim(),
                 isPriority: Boolean(sel.isPriority),
-              },
-            });
-        }
-      }
+              };
+              if (existingRow) {
+                await strapi
+                  .documents("api::course-selection.course-selection")
+                  .update({
+                    documentId: existingRow.documentId,
+                    data,
+                  });
+              } else {
+                await strapi
+                  .documents("api::course-selection.course-selection")
+                  .create({
+                    data: {
+                      ...data,
+                      subscription: subscriptionDocumentId,
+                      danceCourse: sel.courseId,
+                    },
+                  });
+              }
+            }
+          } else {
+            const created = await strapi
+              .documents("api::subscription.subscription")
+              .create({
+                data: {
+                  member: userId,
+                  semester: semester.documentId,
+                  agreedToPay: true,
+                },
+              });
+            subscriptionDocumentId = created.documentId;
+
+            for (const sel of selections as SelectionInput[]) {
+              await strapi
+                .documents("api::course-selection.course-selection")
+                .create({
+                  data: {
+                    subscription: subscriptionDocumentId,
+                    danceCourse: sel.courseId,
+                    role: sel.role,
+                    partnerName:
+                      sel.role === "solo" ? null : sel.partnerName?.trim(),
+                    isPriority: Boolean(sel.isPriority),
+                  },
+                });
+            }
+          }
+        },
+      );
 
       ctx.body = { data: { selections } };
     },
 
     async export(ctx) {
-      const subscriptions = await strapi
-        .documents("api::subscription.subscription")
-        .findMany({
-          populate: [
-            "member",
-            "semester",
-            "courseSelections",
-            "courseSelections.danceCourse",
-          ],
-        });
+      const PAGE_SIZE = 100;
+      const subscriptions: any[] = [];
+      let start = 0;
+      // eslint-disable-next-line no-constant-condition
+      while (true) {
+        const page = await strapi
+          .documents("api::subscription.subscription")
+          .findMany({
+            populate: [
+              "member",
+              "semester",
+              "courseSelections",
+              "courseSelections.danceCourse",
+            ],
+            start,
+            limit: PAGE_SIZE,
+          });
+        subscriptions.push(...page);
+        if (page.length < PAGE_SIZE) break;
+        start += PAGE_SIZE;
+      }
 
       const rows: string[][] = [
         [
