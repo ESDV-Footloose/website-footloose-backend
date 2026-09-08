@@ -1,0 +1,35 @@
+{
+  "kind": "collectionType",
+  "collectionName": "semesters",
+  "info": {
+    "singularName": "semester",
+    "pluralName": "semesters",
+    "displayName": "Semester"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "registrationDeadline": {
+      "type": "datetime",
+      "required": true
+    },
+    "isActive": {
+      "type": "boolean",
+      "required": true,
+      "default": false
+    },
+    "subscriptions": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::subscription.subscription",
+      "mappedBy": "semester"
+    }
+  }
+}

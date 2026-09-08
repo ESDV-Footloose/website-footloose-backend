@@ -1,0 +1,50 @@
+{
+  "kind": "collectionType",
+  "collectionName": "dance_courses",
+  "info": {
+    "singularName": "dance-course",
+    "pluralName": "dance-courses",
+    "displayName": "Dance Course"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "style": {
+      "type": "enumeration",
+      "required": true,
+      "enum": [
+        "Bachata",
+        "Ballet",
+        "Ballroom",
+        "Feminine",
+        "Hiphop",
+        "Jazz",
+        "Modern",
+        "Salsa"
+      ]
+    },
+    "level": {
+      "type": "enumeration",
+      "required": true,
+      "enum": [
+        "one (1)",
+        "two (2)",
+        "three (3)",
+        "four (4)",
+        "demoteam",
+        "bronze",
+        "silver",
+        "silverstar",
+        "gold",
+        "topclass"
+      ]
+    },
+    "isPartnerDance": {
+      "type": "boolean",
+      "required": true,
+      "default": false
+    }
+  }
+}
