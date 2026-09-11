@@ -1197,6 +1197,9 @@ export interface PluginUsersPermissionsUser
     > &
       Schema.Attribute.Private;
     motivationNotStudent: Schema.Attribute.Text;
+    paidMembershipFees: Schema.Attribute.Boolean &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<false>;
     password: Schema.Attribute.Password &
       Schema.Attribute.Private &
       Schema.Attribute.SetMinMaxLength<{
