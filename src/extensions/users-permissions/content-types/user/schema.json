@@ -163,6 +163,11 @@
       "relation": "oneToMany",
       "target": "api::subscription.subscription",
       "mappedBy": "member"
+    },
+    "paidMembershipFees": {
+      "type": "boolean",
+      "required": true,
+      "default": false
     }
   }
 }
