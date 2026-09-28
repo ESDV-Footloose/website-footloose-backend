@@ -158,6 +158,17 @@
       "required": true,
       "default": false
     },
+    "subscriptions": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::subscription.subscription",
+      "mappedBy": "member"
+    },
+    "paidMembershipFees": {
+      "type": "boolean",
+      "required": true,
+      "default": false
+    },
     "eventAttendances": {
       "type": "relation",
       "relation": "manyToMany",

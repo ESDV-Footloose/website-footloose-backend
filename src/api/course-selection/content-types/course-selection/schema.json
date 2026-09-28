@@ -1,0 +1,39 @@
+{
+  "kind": "collectionType",
+  "collectionName": "course_selections",
+  "info": {
+    "singularName": "course-selection",
+    "pluralName": "course-selections",
+    "displayName": "Course Selection"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "subscription": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::subscription.subscription",
+      "inversedBy": "courseSelections"
+    },
+    "danceCourse": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::dance-course.dance-course"
+    },
+    "role": {
+      "type": "enumeration",
+      "enum": ["leader", "follower", "solo"],
+      "required": true
+    },
+    "partnerName": {
+      "type": "string"
+    },
+    "isPriority": {
+      "type": "boolean",
+      "required": true,
+      "default": false
+    }
+  }
+}
