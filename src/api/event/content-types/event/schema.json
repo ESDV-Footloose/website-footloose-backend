@@ -24,6 +24,44 @@
       "type": "datetime",
       "required": true
     },
+    "membersOnly": {
+      "type": "boolean",
+      "required": true,
+      "default": false
+    },
+    "requiresSubscription": {
+      "type": "boolean",
+      "required": true,
+      "default": true
+    },
+    "registrationDeadline": {
+      "type": "datetime",
+      "conditions": {
+        "visible": {
+          "==": [
+            {
+              "var": "requiresSubscription"
+            },
+            true
+          ]
+        }
+      },
+      "required": false
+    },
+    "deregistrationDeadline": {
+      "type": "datetime",
+      "conditions": {
+        "visible": {
+          "==": [
+            {
+              "var": "requiresSubscription"
+            },
+            true
+          ]
+        }
+      },
+      "required": false
+    },
     "location": {
       "type": "string",
       "required": true
@@ -31,32 +69,38 @@
     "image": {
       "type": "media",
       "multiple": false,
-      "allowedTypes": [
-        "images"
-      ]
+      "allowedTypes": ["images"]
     },
     "price": {
       "type": "decimal",
       "required": true,
       "default": 0
     },
-    "personLimit": {
-      "type": "integer"
+    "memberPrice": {
+      "type": "decimal"
     },
-    "requiresSubscription": {
-      "type": "boolean",
-      "required": true,
-      "default": true
+    "personLimit": {
+      "type": "integer",
+      "conditions": {
+        "visible": {
+          "==": [
+            {
+              "var": "requiresSubscription"
+            },
+            true
+          ]
+        }
+      }
+    },
+    "description": {
+      "type": "blocks",
+      "required": true
     },
     "attendees": {
       "type": "relation",
       "relation": "manyToMany",
       "target": "plugin::users-permissions.user",
       "inversedBy": "eventAttendances"
-    },
-    "description": {
-      "type": "blocks",
-      "required": true
     }
   }
 }
