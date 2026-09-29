@@ -24,6 +24,13 @@
       "type": "datetime",
       "required": true
     },
+    "eventCode": {
+      "type": "string",
+      "required": true,
+      "unique": true,
+      "minLength": 2,
+      "maxLength": 10
+    },
     "membersOnly": {
       "type": "boolean",
       "required": true,

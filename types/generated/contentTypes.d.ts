@@ -606,6 +606,13 @@ export interface ApiEventEvent extends Struct.CollectionTypeSchema {
     date: Schema.Attribute.DateTime & Schema.Attribute.Required;
     deregistrationDeadline: Schema.Attribute.DateTime;
     description: Schema.Attribute.Blocks & Schema.Attribute.Required;
+    eventCode: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 10;
+        minLength: 2;
+      }>;
     image: Schema.Attribute.Media<'images'>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::event.event'> &
@@ -653,7 +660,7 @@ export interface ApiHomepageHomepage extends Struct.SingleTypeSchema {
     > &
       Schema.Attribute.Private;
     pageSections: Schema.Attribute.DynamicZone<
-      ['page.section', 'page.banner', 'page.big-banner']
+      ['page.section', 'page.banner', 'page.big-banner', 'page.events-section']
     >;
     publishedAt: Schema.Attribute.DateTime;
     updatedAt: Schema.Attribute.DateTime;

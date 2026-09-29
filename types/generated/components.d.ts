@@ -58,6 +58,9 @@ export interface PageEventsSection extends Struct.ComponentSchema {
   };
   attributes: {
     heading: Schema.Attribute.String;
+    previewOnly: Schema.Attribute.Boolean &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<false>;
   };
 }
 

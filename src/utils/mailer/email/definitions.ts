@@ -28,8 +28,10 @@ export interface TemplateDataMap {
     location: string;
     /** The price this subscriber has to pay. */
     price: number;
-    /** Set for guests without an account; enables a cancellation link. */
-    cancelToken?: string;
+    /** The event's short code, used to build the payment reference. */
+    eventCode: string;
+    /** The subscriber's Strapi user id, used as their member number. */
+    memberId: number;
   };
   eventUnsubscribed: {
     name: string;
@@ -164,19 +166,12 @@ You have successfully subscribed to **{{eventName}}**.
 
 {{#isPaid}}
 > **Payment instructions**
-> Please transfer **{{price}}** before the event to **NL00 XXXX 0000 0000 00** in the name of E.S.D.V. Footloose, stating "{{eventName}}" and your name as the payment description.
+> Please transfer **{{price}}** before the event to **NL00 XXXX 0000 0000 00** in the name of E.S.D.V. Footloose, using payment reference **{{paymentReference}}**.
 
 {{/isPaid}}
-{{#isGuest}}
-Can't make it anymore? You can cancel your subscription until the deregistration deadline has passed.
-
-[Cancel subscription]({{{cancelUrl}}})
-{{/isGuest}}
-{{^isGuest}}
 You can view the event or unsubscribe (while the deregistration deadline has not passed) on the event page.
 
 [View event]({{{eventUrl}}})
-{{/isGuest}}
 `,
     variables: {
       name: "The subscriber's first name",
@@ -185,10 +180,8 @@ You can view the event or unsubscribe (while the deregistration deadline has not
       location: "Event location",
       price: "The price this person pays, e.g. €10.00 or Free",
       isPaid: "True if the price is above zero (for {{#isPaid}}…{{/isPaid}})",
-      isGuest:
-        "True if subscribed without an account ({{#isGuest}}…{{/isGuest}})",
+      paymentReference: "Unique payment reference: event code + member number",
       eventUrl: "Link to the event page (three braces)",
-      cancelUrl: "Cancellation link, only for guests (three braces)",
     },
     context: ({
       name,
@@ -197,7 +190,8 @@ You can view the event or unsubscribe (while the deregistration deadline has not
       date,
       location,
       price,
-      cancelToken,
+      eventCode,
+      memberId,
     }) => ({
       name,
       eventName,
@@ -205,11 +199,8 @@ You can view the event or unsubscribe (while the deregistration deadline has not
       location,
       price: formatPrice(price),
       isPaid: price > 0,
-      isGuest: cancelToken !== undefined,
+      paymentReference: `${eventCode}${memberId}`,
       eventUrl: `${WEBSITE_URL}/events/${slug}`,
-      cancelUrl: cancelToken
-        ? `${WEBSITE_URL}/events/cancel/${cancelToken}`
-        : "",
     }),
   },
 

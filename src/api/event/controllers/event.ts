@@ -16,6 +16,7 @@ type EventEntity = {
   documentId: string;
   name: string;
   slug: string;
+  eventCode: string;
   date: string;
   location: string | null;
   image: { url: string; alternativeText: string | null } | null;
@@ -47,6 +48,11 @@ function fullName(person: {
   lastName?: string | null;
 }) {
   return `${person.firstName ?? ""} ${person.lastName ?? ""}`.trim();
+}
+
+/** Only logged-in members can see members-only events. */
+function isVisible(event: EventEntity, user?: StrapiUser): boolean {
+  return !event.membersOnly || Boolean(user);
 }
 
 function toPublicEvent(
@@ -100,9 +106,11 @@ function toPublicEvent(
       : false,
     /** Only filled in for logged-in users. */
     attendeeNames: includeAttendeeNames
-      ? [...attendees.map((attendee) => fullName(attendee))].sort((a, b) =>
-          a.localeCompare(b),
-        )
+      ? attendees
+          .map(
+            (attendee) => fullName(attendee) || attendee.username || "Member",
+          )
+          .sort((a, b) => a.localeCompare(b))
       : null,
   };
 }
@@ -113,24 +121,6 @@ export default factories.createCoreController(EVENT_UID, ({ strapi }) => {
       documentId,
       populate: ["image", "attendees"],
     })) as unknown as EventEntity | null;
-
-  const present = async (
-    events: EventEntity[],
-    user?: StrapiUser,
-    includeAttendeeNames = false,
-  ) => {
-    return events.map((event) =>
-      toPublicEvent(event, user, includeAttendeeNames),
-    );
-  };
-
-  const presentOne = async (
-    event: EventEntity,
-    user?: StrapiUser,
-    includeAttendeeNames = false,
-  ) => {
-    return toPublicEvent(event, user, includeAttendeeNames);
-  };
 
   /** Email failures must never make a (successful) subscription fail. */
   const trySendEmail = async (send: () => Promise<unknown>) => {
@@ -151,7 +141,11 @@ export default factories.createCoreController(EVENT_UID, ({ strapi }) => {
         populate: ["image", "attendees"],
       })) as unknown as EventEntity[];
 
-      ctx.body = { data: await present(events, user) };
+      ctx.body = {
+        data: events
+          .filter((event) => isVisible(event, user))
+          .map((event) => toPublicEvent(event, user)),
+      };
     },
 
     /** Events the current user is subscribed to, from today onwards. */
@@ -171,7 +165,7 @@ export default factories.createCoreController(EVENT_UID, ({ strapi }) => {
         populate: ["image", "attendees"],
       })) as unknown as EventEntity[];
 
-      ctx.body = { data: await present(events, user) };
+      ctx.body = { data: events.map((event) => toPublicEvent(event, user)) };
     },
 
     async findBySlug(ctx) {
@@ -184,10 +178,12 @@ export default factories.createCoreController(EVENT_UID, ({ strapi }) => {
       })) as unknown as EventEntity[];
 
       const event = events[0];
-      if (!event) return ctx.notFound("Event not found.");
+      if (!event || !isVisible(event, user)) {
+        return ctx.notFound("Event not found.");
+      }
 
       // Attendee names are only visible to logged-in users.
-      ctx.body = { data: await presentOne(event, user, Boolean(user)) };
+      ctx.body = { data: toPublicEvent(event, user, Boolean(user)) };
     },
 
     async subscribe(ctx) {
@@ -195,9 +191,11 @@ export default factories.createCoreController(EVENT_UID, ({ strapi }) => {
       const { documentId } = ctx.params;
 
       const event = await getEvent(documentId);
-      if (!event) return ctx.notFound("Event not found.");
+      if (!event || !isVisible(event, user)) {
+        return ctx.notFound("Event not found.");
+      }
 
-      const current = await presentOne(event, user);
+      const current = toPublicEvent(event, user);
 
       if (!current.requiresSubscription) {
         return ctx.badRequest("This event does not require subscription.");
@@ -223,12 +221,14 @@ export default factories.createCoreController(EVENT_UID, ({ strapi }) => {
       });
 
       const updated = (await getEvent(documentId)) ?? event;
-      const result = await presentOne(updated, user);
+      const result = toPublicEvent(updated, user);
 
       await trySendEmail(() =>
         sendTemplateEmail("eventSubscribed", user.email, {
           name: user.firstName ?? user.email,
           eventName: result.name,
+          eventCode: event.eventCode,
+          memberId: user.id,
           slug: result.slug,
           date: formatDateTime(result.date),
           location: result.location ?? "",
@@ -244,9 +244,11 @@ export default factories.createCoreController(EVENT_UID, ({ strapi }) => {
       const { documentId } = ctx.params;
 
       const event = await getEvent(documentId);
-      if (!event) return ctx.notFound("Event not found.");
+      if (!event || !isVisible(event, user)) {
+        return ctx.notFound("Event not found.");
+      }
 
-      const current = await presentOne(event, user);
+      const current = toPublicEvent(event, user);
       if (current.isDeregistrationClosed) {
         return ctx.badRequest("The deregistration deadline has passed.");
       }
@@ -273,7 +275,7 @@ export default factories.createCoreController(EVENT_UID, ({ strapi }) => {
       );
 
       const updated = (await getEvent(documentId)) ?? event;
-      ctx.body = { data: await presentOne(updated, user) };
+      ctx.body = { data: toPublicEvent(updated, user) };
     },
   };
 });
