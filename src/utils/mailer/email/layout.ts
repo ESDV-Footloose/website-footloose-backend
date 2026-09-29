@@ -1,6 +1,7 @@
 export const FOOTLOOSE_RED = "#e41515";
 export const WEBSITE_URL = "https://esdvfootloose.nl";
-export const CONTACT_EMAIL = "info@esdvfootloose.nl";
+export const CONTACT_EMAIL = "secretary@esdvfootloose.nl";
+export const TREASURER_EMAIL = "penningmeester@esdvfootloose.nl";
 
 /**
  * Wraps the email content in the common Footloose email layout.
