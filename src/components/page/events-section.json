@@ -8,6 +8,11 @@
   "attributes": {
     "heading": {
       "type": "string"
+    },
+    "previewOnly": {
+      "type": "boolean",
+      "required": true,
+      "default": false
     }
   }
 }
