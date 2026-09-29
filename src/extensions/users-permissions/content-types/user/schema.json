@@ -168,6 +168,11 @@
       "type": "boolean",
       "required": true,
       "default": false
+    },
+    "keyAccess": {
+      "type": "boolean",
+      "required": true,
+      "default": false
     }
   }
 }

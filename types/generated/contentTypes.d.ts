@@ -619,7 +619,9 @@ export interface ApiPagePage extends Struct.CollectionTypeSchema {
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::page.page'> &
       Schema.Attribute.Private;
     metaDescription: Schema.Attribute.Text;
-    pageSections: Schema.Attribute.DynamicZone<['page.section', 'page.banner']>;
+    pageSections: Schema.Attribute.DynamicZone<
+      ['page.section', 'page.banner', 'page.hall-reservation']
+    >;
     publishedAt: Schema.Attribute.DateTime;
     slug: Schema.Attribute.String &
       Schema.Attribute.Required &
@@ -1189,6 +1191,9 @@ export interface PluginUsersPermissionsUser
       }>;
     firstName: Schema.Attribute.String & Schema.Attribute.Required;
     graduationYear: Schema.Attribute.Integer;
+    keyAccess: Schema.Attribute.Boolean &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<false>;
     lastName: Schema.Attribute.String & Schema.Attribute.Required;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
