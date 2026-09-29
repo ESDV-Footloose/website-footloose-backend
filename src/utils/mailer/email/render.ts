@@ -23,17 +23,37 @@ export interface EmailContent {
   html: string;
 }
 
-type TemplateSource = { subject: string; title: string; body: string };
+/**
+ * Represents general email content.
+ */
+type TemplateSource = {
+  /** The email subject. */
+  subject: string;
+  /** The email title. */
+  title: string;
+  /** The email body. */
+  body: string;
+};
 
+/**
+ * Represents stored email templates.
+ */
 type StoredTemplate = {
+  /** DocumentID of the template in Strapi. */
   documentId: string;
+  /** The unique name of the template. */
   key: TemplateName;
+  /** The email subject. */
   subject: string | null;
+  /** The email title. */
   title: string | null;
+  /** The email body. */
   body: string | null;
+  /** Variables available to use in the email. */
   availableVariables: string | null;
 };
 
+/** Finds a stored email template by document id, or none if it does not exist. */
 const findStored = async (key: TemplateName) =>
   (await strapi
     .documents(TEMPLATE_UID)
@@ -63,7 +83,7 @@ const compile = (
 
 /**
  * Renders an email, using the version edited in Strapi when available and
- * the default from code otherwise (missing entry, empty field or broken syntax).
+ * the default from code otherwise (in case of missing entry, empty field or broken syntax).
  *
  * @param name The template to render.
  * @param data The data required by that template.
@@ -115,7 +135,6 @@ const describeVariables = (variables: Record<string, string>): string =>
 /**
  * Creates the email templates that do not exist yet in Strapi (from the
  * defaults in code) and keeps the variable reference up to date.
- * Existing subjects, titles and bodies are never overwritten.
  */
 export async function syncEmailTemplates(): Promise<void> {
   for (const key of templateNames) {
