@@ -46,7 +46,7 @@ export const baseWrapper = (title: string, bodyHtml: string): string => `
             border-bottom: 3px solid ${FOOTLOOSE_RED};
           "
         >
-          
+          <a
             href="${WEBSITE_URL}"
             style="
               color: ${FOOTLOOSE_RED};
@@ -103,7 +103,7 @@ export const baseWrapper = (title: string, bodyHtml: string): string => `
               color: #666666;
             "
           >
-            
+            <a
               href="${WEBSITE_URL}"
               style="
                 color: ${FOOTLOOSE_RED};
