@@ -1,5 +1,5 @@
 import { sendTemplateEmail } from "../../../../utils/mailer";
-import type { CourseListItem } from "../../../../utils/mailer/templates";
+import type { CourseListItem } from "../../../../utils/mailer/email/definitions";
 
 /**
  * Represents a single course selected as part of a subscription.
