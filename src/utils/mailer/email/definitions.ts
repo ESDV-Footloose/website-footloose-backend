@@ -1,4 +1,4 @@
-import { CONTACT_EMAIL, WEBSITE_URL } from "./layout";
+import { CONTACT_EMAIL, TREASURER_EMAIL, WEBSITE_URL } from "./layout";
 
 const COURSE_ADMISSION_POLICY_URL = `${WEBSITE_URL}/association-documents`;
 
@@ -16,12 +16,26 @@ export interface CourseListItem {
  * Maps each email template to the data the calling code has to provide.
  */
 export interface TemplateDataMap {
-  signupWelcome: { name: string };
-  accountApproved: { name: string };
-  subscriptionSaved: { name: string; courses: CourseListItem[] };
-  eventSubscribed: {
+  signupWelcome: {
+    /** The name of the user. */
     name: string;
+  };
+  accountApproved: {
+    /** The name of the user. */
+    name: string;
+  };
+  subscriptionSaved: {
+    /** The name of the user. */
+    name: string;
+    /** The dance courses the user subscribed for. */
+    courses: CourseListItem[];
+  };
+  eventSubscribed: {
+    /** The name of the user. */
+    name: string;
+    /** The name of the event. */
     eventName: string;
+    /** The website slug of the event. */
     slug: string;
     /** The pre-formatted event date and time. */
     date: string;
@@ -34,8 +48,11 @@ export interface TemplateDataMap {
     memberId: number;
   };
   eventUnsubscribed: {
+    /** The name of the user. */
     name: string;
+    /** The name of the event. */
     eventName: string;
+    /** The website slug of the event. */
     slug: string;
     /** The pre-formatted event date and time. */
     date: string;
@@ -61,39 +78,41 @@ export interface TemplateDefinition<K extends TemplateName> {
 export const globalContext = {
   websiteUrl: WEBSITE_URL,
   contactEmail: CONTACT_EMAIL,
+  treasurerEmail: TREASURER_EMAIL,
 };
 
 export const globalVariables: Record<string, string> = {
   websiteUrl: "Link to the website (use three braces in links)",
-  contactEmail: "The contact email address",
+  contactEmail:
+    "The contact email address for general questions (Footloose secretary)",
+  treasurerEmail:
+    "The contact email address for financial questions (Footloose treasurer)",
 };
 
+/** Helper to format prices neatly.
+ */
 const formatPrice = (price: number) =>
   price > 0 ? `€${price.toFixed(2)}` : "Free";
 
-export const definitions: {
-  [K in TemplateName]: TemplateDefinition<K>;
-} = {
+export const definitions: { [K in TemplateName]: TemplateDefinition<K> } = {
   signupWelcome: {
     subject: "Welcome to ESDV Footloose!",
     title: "Welcome to Footloose!",
     body: `Hi {{name}},
+    
+    Thank you for signing up for E.S.D.V. Footloose! 
 
-Thank you for signing up for E.S.D.V. Footloose!
-
-Your account has been created successfully. Before you can access the member area, your application needs to be reviewed by the Footloose board.
-
-Please allow us some time to process your application. Once your application has been reviewed, we will send you another email letting you know whether your membership has been approved.
-
-> **Signed up for a workshop?**
-> If you only signed up for a workshop and not for membership, you can ignore this email.
-
-If you do not receive an update after some time, please check your spam or junk mail folder.
-
-If you have any questions, feel free to contact us at [{{contactEmail}}](mailto:{{{contactEmail}}}).
-
-We hope to see you on the dance floor!
-`,
+    Your account has been created successfully. Before you can access the member area, your application needs to be reviewed by the Footloose board.
+    
+    Please allow us some time to process your application. Once your application has been reviewed, we will send you another email letting you know whether your membership has been approved.
+    
+    If you only signed up for a workshop and not for membership, you can ignore this email.
+    
+    If you do not receive an update after some time, please check your spam or junk mail folder.
+    
+    If you have any questions, feel free to contact us at [{{contactEmail}}](mailto:{{{contactEmail}}}).
+    
+    We hope to see you on the dance floor!`,
     variables: { name: "The member's first name" },
     context: ({ name }) => ({ name }),
   },
@@ -102,17 +121,20 @@ We hope to see you on the dance floor!
     subject: "Your Footloose membership has been approved!",
     title: "Your membership has been approved!",
     body: `Hi {{name}},
-
-Good news! The Footloose board has reviewed your application and approved your membership.
-
-You can now log in to the Footloose website using the credentials you chose when creating your account. From your account, you can access the member area and subscribe to our dance courses when subscriptions are open.
-
-> ## Membership fee
->
-> The yearly membership fee is **€40**. If you become a member in February, you can pay the half-year membership fee of **€30**.
->
-> After the dance course subscription deadline, you will receive all payment information for your membership.
-`,
+    
+    Good news! The Footloose board has reviewed your application and approved your membership.
+    
+    You can now log in to the Footloose website using the credentials you chose when creating your account. From your account, you can access the member area and subscribe to our dance courses when subscriptions are open.
+    
+    > ## Membership fee
+    >
+    > The yearly membership fee is **€40**. If you become a member in February, you can pay the half-year membership fee of **€30**.
+    >
+    > After the dance course subscription deadline, you will receive all payment information for your membership.
+     
+    If you have any questions, feel free to contact us at [{{contactEmail}}](mailto:{{{contactEmail}}}).
+    
+    We hope to see you on the dance floor!`,
     variables: { name: "The member's first name" },
     context: ({ name }) => ({ name }),
   },
@@ -121,21 +143,24 @@ You can now log in to the Footloose website using the credentials you chose when
     subject: "Your Footloose course subscription",
     title: "Course subscription received",
     body: `Hi {{name}},
+    
+    Thank you for subscribing to dance courses at Footloose! We have successfully received your subscription. **Please note: this is not yet a confirmation that you have been accepted into these courses.**
+    
+    Your current subscription includes:
+    
+    {{{courseList}}}
+    
+    If more people subscribe to a course than there are available places, our [course admission policy]({{{courseAdmissionPolicyUrl}}}) will be applied.
+    
+    Once the subscription period has ended, we will process all subscriptions and let you know whether you have been accepted into your selected courses.
+    
+    You can manage your subscriptions through your account on the Footloose website.
 
-Thank you for subscribing to dance courses at Footloose! We have successfully received your subscription. **Please note: this is not yet a confirmation that you have been accepted into these courses.**
-
-Your current subscription includes:
-
-{{{courseList}}}
-
-If more people subscribe to a course than there are available places, our [course admission policy]({{{courseAdmissionPolicyUrl}}}) will be applied.
-
-Once the subscription period has ended, we will process all subscriptions and let you know whether you have been accepted into your selected courses.
-
-You can manage your subscriptions through your account on the Footloose website.
-
-[Go to Footloose]({{{websiteUrl}}})
-`,
+    If you have any questions, feel free to contact us at [{{contactEmail}}](mailto:{{{contactEmail}}}).
+    
+    We hope to see you on the dance floor!
+    
+    [Go to Footloose]({{{websiteUrl}}})`,
     variables: {
       name: "The member's first name",
       courseList: "Bullet list of the subscribed courses (use three braces)",
@@ -154,32 +179,38 @@ You can manage your subscriptions through your account on the Footloose website.
   },
 
   eventSubscribed: {
-    subject: "You're subscribed: {{eventName}}",
+    subject: "Event subscription confirmed",
     title: "Event subscription confirmed",
     body: `Hi {{name}},
+    
+    You have successfully subscribed to the **{{eventName}}**.
+    
+    > **Date:** {{date}}
+    > **Location:** {{location}}
+    > **Price:** {{price}}
+     
+    {{#isPaid}}
+    Please transfer **{{price}}** before the event to:
+    Eindhovense Studentendansvereniging Footloose
+    NL90 RABO 0368 3624 34
+    with **{{paymentReference}}** in the description
+    
+    {{/isPaid}}
+    You can view the event or unsubscribe (while the deregistration deadline has not passed) on the event page.
 
-You have successfully subscribed to **{{eventName}}**.
-
-> **When:** {{date}}
-> **Where:** {{location}}
-> **Price:** {{price}}
-
-{{#isPaid}}
-> **Payment instructions**
-> Please transfer **{{price}}** before the event to **NL00 XXXX 0000 0000 00** in the name of E.S.D.V. Footloose, using payment reference **{{paymentReference}}**.
-
-{{/isPaid}}
-You can view the event or unsubscribe (while the deregistration deadline has not passed) on the event page.
-
-[View event]({{{eventUrl}}})
-`,
+    If you have any general questions, feel free to contact us at [{{contactEmail}}](mailto:{{{contactEmail}}}).
+    If you have any questions regarding payment, feel free to contact us at [{{treasurerEmail}}](mailto:{{{treasurerEmail}}}).
+    
+    We hope to see you on the dance floor!
+    
+    [View event]({{{eventUrl}}})`,
     variables: {
       name: "The subscriber's first name",
       eventName: "The event name",
       date: "Event date and time",
       location: "Event location",
-      price: "The price this person pays, e.g. €10.00 or Free",
-      isPaid: "True if the price is above zero (for {{#isPaid}}…{{/isPaid}})",
+      price: "The price this person pays",
+      isPaid: "True if the price is above zero (for {{#isPaid}},{{/isPaid}})",
       paymentReference: "Unique payment reference: event code + member number",
       eventUrl: "Link to the event page (three braces)",
     },
@@ -205,18 +236,19 @@ You can view the event or unsubscribe (while the deregistration deadline has not
   },
 
   eventUnsubscribed: {
-    subject: "Unsubscribed: {{eventName}}",
-    title: "Event unsubscription confirmed",
+    subject: "Event subscription cancelled",
+    title: "Event subscription cancelled",
     body: `Hi {{name}},
+    
+    Your subscription for the **{{eventName}}** on {{date}} has been cancelled.
+    
+    If you have already paid for this event, please contact us at [{{treasurerEmail}}](mailto:{{{treasurerEmail}}}).
+    
+    Changed your mind? You can subscribe again on the event page for as long as registration is open and places are available.
 
-You have been unsubscribed from **{{eventName}}** ({{date}}).
-
-If you have already paid for this event, please contact us at [{{contactEmail}}](mailto:{{{contactEmail}}}).
-
-Changed your mind? You can subscribe again on the event page for as long as registration is open.
-
-[View event]({{{eventUrl}}})
-`,
+    We hope to see you on the dance floor!
+    
+    [View event]({{{eventUrl}}})`,
     variables: {
       name: "The subscriber's first name",
       eventName: "The event name",
