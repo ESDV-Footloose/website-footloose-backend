@@ -44,6 +44,16 @@ export interface AccountApprovedData {
   name: string;
 }
 
+/**
+ * Data required to fill the password reset email.
+ */
+export interface PasswordResetData {
+  /** The member's first name. */
+  name: string;
+  /** The URL where the member can choose a new password. */
+  resetUrl: string;
+}
+
 const FOOTLOOSE_RED = "#e41515";
 const WEBSITE_URL = "https://esdvfootloose.nl";
 const COURSE_ADMISSION_POLICY_URL =
@@ -267,7 +277,8 @@ const buttonHtml = (text: string, url: string): string => `
  * Collection of email templates. Currently includes:
  * 1. Course subscription received
  * 2. Welcome email (first signup)
- * 3. Account approved.
+ * 3. Account approved
+ * 4. Password reset.
  */
 export const templates = {
   /** Confirms that a member's course subscription was received. */
@@ -473,6 +484,76 @@ export const templates = {
     `,
     ),
   }),
+
+  /** Sends a member a link to reset their password. */
+  passwordReset: ({ name, resetUrl }: PasswordResetData): EmailContent => ({
+    subject: "Reset your Footloose password",
+    html: baseWrapper(
+      "Reset your password",
+      `
+      <p style="margin: 0 0 16px; font-size: 15px;">
+        Hi ${name},
+      </p>
+
+      <p style="margin: 0 0 16px; font-size: 15px;">
+        We received a request to reset the password of your Footloose
+        account. Click the button below to choose a new password.
+      </p>
+
+      ${buttonHtml("Reset password", resetUrl)}
+
+      <p style="margin: 20px 0 16px; font-size: 14px; color: #444444;">
+        If the button does not work, copy and paste the following link
+        into your browser:<br />
+        <a
+          href="${resetUrl}"
+          style="
+            color: ${FOOTLOOSE_RED};
+            word-break: break-all;
+            text-decoration: none;
+          "
+        >
+          ${resetUrl}
+        </a>
+      </p>
+
+      <div
+        style="
+          margin: 24px 0;
+          padding: 14px 16px;
+          border-left: 3px solid ${FOOTLOOSE_RED};
+          background-color: #fafafa;
+        "
+      >
+        <p
+          style="
+            margin: 0;
+            font-size: 14px;
+            color: #444444;
+          "
+        >
+          <strong>Did not request a password reset?</strong><br />
+          You can safely ignore this email. Your password will not be
+          changed unless you open the link above and choose a new one.
+        </p>
+      </div>
+
+      <p style="margin: 0; font-size: 15px;">
+        If you have any questions, feel free to contact us at
+        <a
+          href="mailto:info@esdvfootloose.nl"
+          style="
+            color: ${FOOTLOOSE_RED};
+            font-weight: 600;
+            text-decoration: none;
+          "
+        >
+          info@esdvfootloose.nl
+        </a>.
+      </p>
+    `,
+    ),
+  }),
 };
 
 /**
@@ -490,4 +571,6 @@ export interface TemplateDataMap {
   signupWelcome: SignupWelcomeData;
   /** Data required for the membership approval email. */
   accountApproved: AccountApprovedData;
+  /** Data required for the password reset email. */
+  passwordReset: PasswordResetData;
 }
