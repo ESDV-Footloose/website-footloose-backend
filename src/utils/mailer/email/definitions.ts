@@ -100,19 +100,19 @@ export const definitions: { [K in TemplateName]: TemplateDefinition<K> } = {
     title: "Welcome to Footloose!",
     body: `Hi {{name}},
     
-    Thank you for signing up for E.S.D.V. Footloose! 
+Thank you for signing up for E.S.D.V. Footloose! 
 
-    Your account has been created successfully. Before you can access the member area, your application needs to be reviewed by the Footloose board.
+Your account has been created successfully. Before you can access the member area, your application needs to be reviewed by the Footloose board.
     
-    Please allow us some time to process your application. Once your application has been reviewed, we will send you another email letting you know whether your membership has been approved.
+Please allow us some time to process your application. Once your application has been reviewed, we will send you another email letting you know whether your membership has been approved.
     
-    If you only signed up for a workshop and not for membership, you can ignore this email.
+If you only signed up for a workshop and not for membership, you can ignore this email.
     
-    If you do not receive an update after some time, please check your spam or junk mail folder.
+If you do not receive an update after some time, please check your spam or junk mail folder.
     
-    If you have any questions, feel free to contact us at [{{contactEmail}}](mailto:{{{contactEmail}}}).
+If you have any questions, feel free to contact us at [{{contactEmail}}](mailto:{{{contactEmail}}}).
     
-    We hope to see you on the dance floor!`,
+We hope to see you on the dance floor!`,
     variables: { name: "The member's first name" },
     context: ({ name }) => ({ name }),
   },
@@ -121,20 +121,20 @@ export const definitions: { [K in TemplateName]: TemplateDefinition<K> } = {
     subject: "Your Footloose membership has been approved!",
     title: "Your membership has been approved!",
     body: `Hi {{name}},
+   
+Good news! The Footloose board has reviewed your application and approved your membership.
     
-    Good news! The Footloose board has reviewed your application and approved your membership.
-    
-    You can now log in to the Footloose website using the credentials you chose when creating your account. From your account, you can access the member area and subscribe to our dance courses when subscriptions are open.
-    
-    > ## Membership fee
-    >
-    > The yearly membership fee is **€40**. If you become a member in February, you can pay the half-year membership fee of **€30**.
-    >
-    > After the dance course subscription deadline, you will receive all payment information for your membership.
-     
-    If you have any questions, feel free to contact us at [{{contactEmail}}](mailto:{{{contactEmail}}}).
-    
-    We hope to see you on the dance floor!`,
+You can now log in to the Footloose website using the credentials you chose when creating your account. From your account, you can access the member area and subscribe to our dance courses when subscriptions are open.
+
+> ## Membership fee
+>
+> The yearly membership fee is **€40**. If you become a member in February, you can pay the half-year membership fee of **€30**.
+>
+> After the dance course subscription deadline, you will receive all payment information for your membership.
+  
+If you have any questions, feel free to contact us at [{{contactEmail}}](mailto:{{{contactEmail}}}).
+
+We hope to see you on the dance floor!`,
     variables: { name: "The member's first name" },
     context: ({ name }) => ({ name }),
   },
@@ -143,24 +143,24 @@ export const definitions: { [K in TemplateName]: TemplateDefinition<K> } = {
     subject: "Your Footloose course subscription",
     title: "Course subscription received",
     body: `Hi {{name}},
-    
-    Thank you for subscribing to dance courses at Footloose! We have successfully received your subscription. **Please note: this is not yet a confirmation that you have been accepted into these courses.**
-    
-    Your current subscription includes:
-    
-    {{{courseList}}}
-    
-    If more people subscribe to a course than there are available places, our [course admission policy]({{{courseAdmissionPolicyUrl}}}) will be applied.
-    
-    Once the subscription period has ended, we will process all subscriptions and let you know whether you have been accepted into your selected courses.
-    
-    You can manage your subscriptions through your account on the Footloose website.
+   
+Thank you for subscribing to dance courses at Footloose! We have successfully received your subscription. **Please note: this is not yet a confirmation that you have been accepted into these courses.**
 
-    If you have any questions, feel free to contact us at [{{contactEmail}}](mailto:{{{contactEmail}}}).
-    
-    We hope to see you on the dance floor!
-    
-    [Go to Footloose]({{{websiteUrl}}})`,
+Your current subscription includes:
+
+{{{courseList}}}
+
+If more people subscribe to a course than there are available places, our [course admission policy]({{{courseAdmissionPolicyUrl}}}) will be applied.
+
+Once the subscription period has ended, we will process all subscriptions and let you know whether you have been accepted into your selected courses.
+
+You can manage your subscriptions through your account on the Footloose website.
+
+If you have any questions, feel free to contact us at [{{contactEmail}}](mailto:{{{contactEmail}}}).
+
+We hope to see you on the dance floor!
+
+[Go to Footloose]({{{websiteUrl}}})`,
     variables: {
       name: "The member's first name",
       courseList: "Bullet list of the subscribed courses (use three braces)",
@@ -182,28 +182,28 @@ export const definitions: { [K in TemplateName]: TemplateDefinition<K> } = {
     subject: "Event subscription confirmed",
     title: "Event subscription confirmed",
     body: `Hi {{name}},
-    
-    You have successfully subscribed to the **{{eventName}}**.
-    
-    > **Date:** {{date}}
-    > **Location:** {{location}}
-    > **Price:** {{price}}
-     
-    {{#isPaid}}
-    Please transfer **{{price}}** before the event to:
-    Eindhovense Studentendansvereniging Footloose
-    NL90 RABO 0368 3624 34
-    with **{{paymentReference}}** in the description
-    
-    {{/isPaid}}
-    You can view the event or unsubscribe (while the deregistration deadline has not passed) on the event page.
 
-    If you have any general questions, feel free to contact us at [{{contactEmail}}](mailto:{{{contactEmail}}}).
-    If you have any questions regarding payment, feel free to contact us at [{{treasurerEmail}}](mailto:{{{treasurerEmail}}}).
-    
-    We hope to see you on the dance floor!
-    
-    [View event]({{{eventUrl}}})`,
+You have successfully subscribed to the **{{eventName}}**.
+
+> **Date:** {{date}}
+> **Location:** {{location}}
+> **Price:** {{price}}
+  
+{{#isPaid}}
+Please transfer **{{price}}** before the event to:
+Eindhovense Studentendansvereniging Footloose
+NL90 RABO 0368 3624 34
+with **{{paymentReference}}** in the description
+
+{{/isPaid}}
+You can view the event or unsubscribe (while the deregistration deadline has not passed) on the event page.
+
+If you have any general questions, feel free to contact us at [{{contactEmail}}](mailto:{{{contactEmail}}}).
+If you have any questions regarding payment, feel free to contact us at [{{treasurerEmail}}](mailto:{{{treasurerEmail}}}).
+
+We hope to see you on the dance floor!
+
+[View event]({{{eventUrl}}})`,
     variables: {
       name: "The subscriber's first name",
       eventName: "The event name",
@@ -239,16 +239,16 @@ export const definitions: { [K in TemplateName]: TemplateDefinition<K> } = {
     subject: "Event subscription cancelled",
     title: "Event subscription cancelled",
     body: `Hi {{name}},
-    
-    Your subscription for the **{{eventName}}** on {{date}} has been cancelled.
-    
-    If you have already paid for this event, please contact us at [{{treasurerEmail}}](mailto:{{{treasurerEmail}}}).
-    
-    Changed your mind? You can subscribe again on the event page for as long as registration is open and places are available.
 
-    We hope to see you on the dance floor!
-    
-    [View event]({{{eventUrl}}})`,
+Your subscription for the **{{eventName}}** on {{date}} has been cancelled.
+
+If you have already paid for this event, please contact us at [{{treasurerEmail}}](mailto:{{{treasurerEmail}}}).
+
+Changed your mind? You can subscribe again on the event page for as long as registration is open and places are available.
+
+We hope to see you on the dance floor!
+
+[View event]({{{eventUrl}}})`,
     variables: {
       name: "The subscriber's first name",
       eventName: "The event name",
