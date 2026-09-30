@@ -27,7 +27,8 @@
       "type": "dynamiczone",
       "components": [
         "page.section",
-        "page.banner"
+        "page.banner",
+        "page.events-section"
       ]
     }
   }

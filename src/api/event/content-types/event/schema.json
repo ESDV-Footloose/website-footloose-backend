@@ -1,0 +1,113 @@
+{
+  "kind": "collectionType",
+  "collectionName": "events",
+  "info": {
+    "singularName": "event",
+    "pluralName": "events",
+    "displayName": "Event"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "name",
+      "required": true
+    },
+    "date": {
+      "type": "datetime",
+      "required": true
+    },
+    "eventCode": {
+      "type": "string",
+      "required": true,
+      "unique": true,
+      "minLength": 2,
+      "maxLength": 10
+    },
+    "membersOnly": {
+      "type": "boolean",
+      "required": true,
+      "default": false
+    },
+    "requiresSubscription": {
+      "type": "boolean",
+      "required": true,
+      "default": true
+    },
+    "registrationDeadline": {
+      "type": "datetime",
+      "conditions": {
+        "visible": {
+          "==": [
+            {
+              "var": "requiresSubscription"
+            },
+            true
+          ]
+        }
+      },
+      "required": false
+    },
+    "deregistrationDeadline": {
+      "type": "datetime",
+      "conditions": {
+        "visible": {
+          "==": [
+            {
+              "var": "requiresSubscription"
+            },
+            true
+          ]
+        }
+      },
+      "required": false
+    },
+    "location": {
+      "type": "string",
+      "required": true
+    },
+    "image": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["images"]
+    },
+    "price": {
+      "type": "decimal",
+      "required": true,
+      "default": 0
+    },
+    "memberPrice": {
+      "type": "decimal"
+    },
+    "personLimit": {
+      "type": "integer",
+      "conditions": {
+        "visible": {
+          "==": [
+            {
+              "var": "requiresSubscription"
+            },
+            true
+          ]
+        }
+      }
+    },
+    "description": {
+      "type": "blocks",
+      "required": true
+    },
+    "attendees": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "eventAttendances"
+    }
+  }
+}
