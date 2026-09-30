@@ -1,0 +1,41 @@
+{
+  "collectionName": "components_hall_reservations_halls",
+  "info": {
+    "displayName": "Hall"
+  },
+  "options": {},
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "pendingCalendarId": {
+      "type": "string",
+      "required": true
+    },
+    "confirmedCalendarId": {
+      "type": "string",
+      "required": true
+    },
+    "pendingColor": {
+      "type": "string",
+      "required": true
+    },
+    "confirmedColor": {
+      "type": "string",
+      "required": true
+    },
+    "earliestStartTime": {
+      "type": "time"
+    },
+    "note": {
+      "type": "string"
+    },
+    "daysOpen": {
+      "type": "component",
+      "component": "hall-reservations.days-open",
+      "repeatable": false
+    }
+  },
+  "config": {}
+}
