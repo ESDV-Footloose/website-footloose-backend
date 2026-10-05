@@ -169,7 +169,7 @@ export default factories.createCoreController(EVENT_UID, ({ strapi }) => {
     },
 
     /** Events the current user is subscribed to, from today onwards. */
-    async mine(ctx) {
+    async myEvents(ctx) {
       const user = ctx.state.user as StrapiUser | undefined;
       if (!user) return ctx.unauthorized();
 

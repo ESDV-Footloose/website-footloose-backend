@@ -1,7 +1,7 @@
 export default {
   routes: [
     { method: "GET", path: "/events/list", handler: "event.list" },
-    { method: "GET", path: "/events/mine", handler: "event.mine" },
+    { method: "GET", path: "/events/myEvents", handler: "event.myEvents" },
     { method: "GET", path: "/events/slug/:slug", handler: "event.findBySlug" },
     {
       method: "POST",
