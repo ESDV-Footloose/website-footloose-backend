@@ -135,16 +135,36 @@ export default factories.createCoreController(EVENT_UID, ({ strapi }) => {
     async list(ctx) {
       const user = ctx.state.user as StrapiUser | undefined;
 
+      const page = Math.max(1, Number(ctx.query.page) || 1);
+      const pageSize = Math.min(
+        50, // Artificial max, this should be high enough
+        Math.max(1, Number(ctx.query.pageSize) || 6),
+      );
+
+      const filters: Record<string, unknown> = {
+        date: { $gte: new Date().toISOString() },
+      };
+
+      if (!user) {
+        filters.membersOnly = false;
+      }
+
+      // Fetch one extra row to find out whether there is a next page.
       const events = (await strapi.documents(EVENT_UID).findMany({
-        filters: { date: { $gte: new Date().toISOString() } },
-        sort: ["date:asc"],
+        filters,
+        sort: [{ date: "asc" }],
         populate: ["image", "attendees"],
+        limit: pageSize + 1,
+        start: (page - 1) * pageSize,
       })) as unknown as EventEntity[];
+
+      const hasMore = events.length > pageSize;
 
       ctx.body = {
         data: events
-          .filter((event) => isVisible(event, user))
+          .slice(0, pageSize)
           .map((event) => toPublicEvent(event, user)),
+        meta: { page, pageSize, hasMore },
       };
     },
 
