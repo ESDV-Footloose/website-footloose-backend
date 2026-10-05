@@ -211,7 +211,8 @@ We hope to see you on the dance floor!
       location: "Event location",
       price: "The price this person pays",
       isPaid: "True if the price is above zero (for {{#isPaid}},{{/isPaid}})",
-      paymentReference: "Unique payment reference: event code + member number",
+      paymentReference:
+        "Unique payment reference: event code + member number padded to 4 digits with 0",
       eventUrl: "Link to the event page (three braces)",
     },
     context: ({
@@ -230,7 +231,7 @@ We hope to see you on the dance floor!
       location,
       price: formatPrice(price),
       isPaid: price > 0,
-      paymentReference: `${eventCode}${memberId}`,
+      paymentReference: `${eventCode}${String(memberId).padStart(4, "0")}`,
       eventUrl: `${WEBSITE_URL}/events/${slug}`,
     }),
   },
