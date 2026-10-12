@@ -22,7 +22,7 @@ md.renderer.rules.bullet_list_open = () =>
   `<ul style="margin: 0 0 16px; padding-left: 20px; font-size: 15px;">`;
 
 md.renderer.rules.link_open = (tokens, idx) => {
-  const href = md.utils.escapeHtml(tokens[idx].attrGet("href") ?? "");
+  const href = md.utils.escapeHtml(String(tokens[idx].attrGet("href") ?? ""));
 
   // A link that is the only content of its paragraph becomes a button.
   const isButton = idx === 0 && tokens.length === 3;
