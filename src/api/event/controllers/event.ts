@@ -19,6 +19,8 @@ type EventEntity = {
   eventCode: string;
   date: string;
   location: string | null;
+  organizer: string | null;
+  organizerEmail: string | null;
   image: { url: string; alternativeText: string | null } | null;
   description: unknown;
   price: number | string;
@@ -50,9 +52,14 @@ function fullName(person: {
   return `${person.firstName ?? ""} ${person.lastName ?? ""}`.trim();
 }
 
-/** Only logged-in members can see members-only events. */
+/** Only approved members are treated as members. */
+function isApprovedMember(user?: StrapiUser): boolean {
+  return Boolean(user?.approved);
+}
+
+/** Only approved members can see members-only events. */
 function isVisible(event: EventEntity, user?: StrapiUser): boolean {
-  return !event.membersOnly || Boolean(user);
+  return !event.membersOnly || isApprovedMember(user);
 }
 
 function toPublicEvent(
@@ -67,7 +74,7 @@ function toPublicEvent(
   const memberPrice =
     event.memberPrice != null ? Number(event.memberPrice) : null;
   const hasMemberPrice = memberPrice != null && memberPrice !== price;
-  const isMember = Boolean(user?.approved);
+  const isMember = isApprovedMember(user);
 
   return {
     documentId: event.documentId,
@@ -75,6 +82,8 @@ function toPublicEvent(
     slug: event.slug,
     date: event.date,
     location: event.location ?? null,
+    organizer: event.organizer ?? null,
+    organizerEmail: event.organizerEmail ?? null,
     image: event.image
       ? {
           url: event.image.url,
@@ -104,7 +113,7 @@ function toPublicEvent(
     isSubscribed: user
       ? attendees.some((attendee) => attendee.id === user.id)
       : false,
-    /** Only filled in for logged-in users. */
+    /** Only filled in for approved members. */
     attendeeNames: includeAttendeeNames
       ? attendees
           .map(
@@ -119,8 +128,20 @@ export default factories.createCoreController(EVENT_UID, ({ strapi }) => {
   const getEvent = async (documentId: string): Promise<EventEntity | null> =>
     (await strapi.documents(EVENT_UID).findOne({
       documentId,
+      status: "published",
       populate: ["image", "attendees"],
     })) as unknown as EventEntity | null;
+
+  /**
+   * Saves the attendee list
+   */
+  const saveAttendees = async (documentId: string, attendeeIds: number[]) => {
+    await strapi.documents(EVENT_UID).update({
+      documentId,
+      status: "published",
+      data: { attendees: attendeeIds },
+    });
+  };
 
   /** Email failures must never make a (successful) subscription fail. */
   const trySendEmail = async (send: () => Promise<unknown>) => {
@@ -132,7 +153,7 @@ export default factories.createCoreController(EVENT_UID, ({ strapi }) => {
   };
 
   return {
-    async list(ctx) {
+    async find(ctx) {
       const user = ctx.state.user as StrapiUser | undefined;
 
       const page = Math.max(1, Number(ctx.query.page) || 1);
@@ -145,12 +166,13 @@ export default factories.createCoreController(EVENT_UID, ({ strapi }) => {
         date: { $gte: new Date().toISOString() },
       };
 
-      if (!user) {
+      if (!isApprovedMember(user)) {
         filters.membersOnly = false;
       }
 
       // Fetch one extra row to find out whether there is a next page.
       const events = (await strapi.documents(EVENT_UID).findMany({
+        status: "published",
         filters,
         sort: [{ date: "asc" }],
         populate: ["image", "attendees"],
@@ -177,6 +199,7 @@ export default factories.createCoreController(EVENT_UID, ({ strapi }) => {
       startOfToday.setHours(0, 0, 0, 0); // uses the server's timezone
 
       const events = (await strapi.documents(EVENT_UID).findMany({
+        status: "published",
         filters: {
           date: { $gte: startOfToday.toISOString() },
           attendees: { id: { $eq: user.id } },
@@ -188,11 +211,12 @@ export default factories.createCoreController(EVENT_UID, ({ strapi }) => {
       ctx.body = { data: events.map((event) => toPublicEvent(event, user)) };
     },
 
-    async findBySlug(ctx) {
+    async findOne(ctx) {
       const user = ctx.state.user as StrapiUser | undefined;
-      const { slug } = ctx.params;
+      const { id: slug } = ctx.params;
 
       const events = (await strapi.documents(EVENT_UID).findMany({
+        status: "published",
         filters: { slug },
         populate: ["image", "attendees"],
       })) as unknown as EventEntity[];
@@ -202,8 +226,10 @@ export default factories.createCoreController(EVENT_UID, ({ strapi }) => {
         return ctx.notFound("Event not found.");
       }
 
-      // Attendee names are only visible to logged-in users.
-      ctx.body = { data: toPublicEvent(event, user, Boolean(user)) };
+      // Attendee names are only visible to approved members.
+      ctx.body = {
+        data: toPublicEvent(event, user, isApprovedMember(user)),
+      };
     },
 
     async subscribe(ctx) {
@@ -233,12 +259,10 @@ export default factories.createCoreController(EVENT_UID, ({ strapi }) => {
         return ctx.badRequest("This event is full.");
       }
 
-      await strapi.documents(EVENT_UID).update({
-        documentId,
-        data: {
-          attendees: [...(event.attendees ?? []).map((a) => a.id), user.id],
-        },
-      });
+      await saveAttendees(documentId, [
+        ...(event.attendees ?? []).map((a) => a.id),
+        user.id,
+      ]);
 
       const updated = (await getEvent(documentId)) ?? event;
       const result = toPublicEvent(updated, user);
@@ -253,6 +277,8 @@ export default factories.createCoreController(EVENT_UID, ({ strapi }) => {
           date: formatDateTime(result.date),
           location: result.location ?? "",
           price: result.applicablePrice,
+          organizer: result.organizer,
+          organizerEmail: result.organizerEmail,
         }),
       );
 
@@ -280,10 +306,10 @@ export default factories.createCoreController(EVENT_UID, ({ strapi }) => {
         return ctx.badRequest("You are not subscribed to this event.");
       }
 
-      await strapi.documents(EVENT_UID).update({
+      await saveAttendees(
         documentId,
-        data: { attendees: remaining.map((a) => a.id) },
-      });
+        remaining.map((a) => a.id),
+      );
 
       await trySendEmail(() =>
         sendTemplateEmail("eventUnsubscribed", user.email, {
@@ -291,6 +317,8 @@ export default factories.createCoreController(EVENT_UID, ({ strapi }) => {
           eventName: event.name,
           slug: event.slug,
           date: formatDateTime(event.date),
+          organizer: event.organizer,
+          organizerEmail: event.organizerEmail,
         }),
       );
 

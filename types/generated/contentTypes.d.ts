@@ -623,6 +623,8 @@ export interface ApiEventEvent extends Struct.CollectionTypeSchema {
       Schema.Attribute.Required &
       Schema.Attribute.DefaultTo<false>;
     name: Schema.Attribute.String & Schema.Attribute.Required;
+    organizer: Schema.Attribute.String;
+    organizerEmail: Schema.Attribute.Email;
     personLimit: Schema.Attribute.Integer;
     price: Schema.Attribute.Decimal &
       Schema.Attribute.Required &
