@@ -46,6 +46,10 @@ export interface TemplateDataMap {
     eventCode: string;
     /** The subscriber's Strapi user id, used as their member number. */
     memberId: number;
+    /** The committee organizing the event, if set. */
+    organizer?: string | null;
+    /** The email address of the organizers, if set. */
+    organizerEmail?: string | null;
   };
   eventUnsubscribed: {
     /** The name of the user. */
@@ -56,6 +60,10 @@ export interface TemplateDataMap {
     slug: string;
     /** The pre-formatted event date and time. */
     date: string;
+    /** The committee organizing the event, if set. */
+    organizer?: string | null;
+    /** The email address of the organizers, if set. */
+    organizerEmail?: string | null;
   };
 }
 
@@ -93,6 +101,27 @@ export const globalVariables: Record<string, string> = {
  */
 const formatPrice = (price: number) =>
   price > 0 ? `€${price.toFixed(2)}` : "Free";
+
+/** Shared by the event emails: who organizes the event and how to reach them. */
+const organizerContext = (
+  organizer?: string | null,
+  organizerEmail?: string | null,
+) => ({
+  hasOrganizer: Boolean(organizer),
+  organizer: organizer ?? "",
+  hasOrganizerEmail: Boolean(organizerEmail),
+  organizerEmail: organizerEmail ?? "",
+  organizerSubject: organizer ? "They" : "The organizers of this event",
+});
+
+const organizerVariables = {
+  hasOrganizer: "True if an organizer name is set",
+  organizer: "The name of the organizing committee (may be empty)",
+  hasOrganizerEmail: "True if an organizer email is set",
+  organizerEmail: "The organizer's contact email (may be empty)",
+  organizerSubject:
+    "They if an organizer is set, otherwise The organizers of this event",
+};
 
 export const definitions: { [K in TemplateName]: TemplateDefinition<K> } = {
   signupWelcome: {
@@ -198,6 +227,13 @@ with **{{paymentReference}}** in the description
 {{/isPaid}}
 You can view the event or unsubscribe (while the deregistration deadline has not passed) on the event page.
 
+{{#hasOrganizer}}
+This event is organized by **{{organizer}}**.
+{{/hasOrganizer}}
+{{#hasOrganizerEmail}}
+{{organizerSubject}} can be contacted at [{{organizerEmail}}](mailto:{{{organizerEmail}}}).
+{{/hasOrganizerEmail}}
+
 If you have any general questions, feel free to contact us at [{{contactEmail}}](mailto:{{{contactEmail}}}).
 If you have any questions regarding payment, feel free to contact us at [{{treasurerEmail}}](mailto:{{{treasurerEmail}}}).
 
@@ -213,6 +249,7 @@ We hope to see you on the dance floor!
       isPaid: "True if the price is above zero (for {{#isPaid}},{{/isPaid}})",
       paymentReference:
         "Unique payment reference: event code + member number padded to 4 digits with 0",
+      ...organizerVariables,
       eventUrl: "Link to the event page (three braces)",
     },
     context: ({
@@ -224,6 +261,8 @@ We hope to see you on the dance floor!
       price,
       eventCode,
       memberId,
+      organizer,
+      organizerEmail,
     }) => ({
       name,
       eventName,
@@ -232,6 +271,7 @@ We hope to see you on the dance floor!
       price: formatPrice(price),
       isPaid: price > 0,
       paymentReference: `${eventCode}${String(memberId).padStart(4, "0")}`,
+      ...organizerContext(organizer, organizerEmail),
       eventUrl: `${WEBSITE_URL}/events/${slug}`,
     }),
   },
@@ -247,6 +287,13 @@ If you have already paid for this event, please contact us at [{{treasurerEmail}
 
 Changed your mind? You can subscribe again on the event page for as long as registration is open and places are available.
 
+{{#hasOrganizer}}
+This event is organized by **{{organizer}}**.
+{{/hasOrganizer}}
+{{#hasOrganizerEmail}}
+{{organizerSubject}} can be contacted at [{{organizerEmail}}](mailto:{{{organizerEmail}}}).
+{{/hasOrganizerEmail}}
+
 We hope to see you on the dance floor!
 
 [View event]({{{eventUrl}}})`,
@@ -254,12 +301,14 @@ We hope to see you on the dance floor!
       name: "The subscriber's first name",
       eventName: "The event name",
       date: "Event date and time",
+      ...organizerVariables,
       eventUrl: "Link to the event page (three braces)",
     },
-    context: ({ name, eventName, slug, date }) => ({
+    context: ({ name, eventName, slug, date, organizer, organizerEmail }) => ({
       name,
       eventName,
       date,
+      ...organizerContext(organizer, organizerEmail),
       eventUrl: `${WEBSITE_URL}/events/${slug}`,
     }),
   },

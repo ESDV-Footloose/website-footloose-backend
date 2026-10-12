@@ -73,6 +73,14 @@
       "type": "string",
       "required": true
     },
+    "organizer": {
+      "type": "string",
+      "required": false
+    },
+    "organizerEmail": {
+      "type": "email",
+      "required": false
+    },
     "image": {
       "type": "media",
       "multiple": false,
