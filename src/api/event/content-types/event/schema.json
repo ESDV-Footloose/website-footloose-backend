@@ -89,13 +89,16 @@
     "price": {
       "type": "decimal",
       "required": true,
-      "default": 0
+      "default": 0,
+      "min": 0
     },
     "memberPrice": {
-      "type": "decimal"
+      "type": "decimal",
+      "min": 0
     },
     "personLimit": {
       "type": "integer",
+      "min": 0,
       "conditions": {
         "visible": {
           "==": [
