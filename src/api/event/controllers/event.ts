@@ -133,14 +133,26 @@ export default factories.createCoreController(EVENT_UID, ({ strapi }) => {
     })) as unknown as EventEntity | null;
 
   /**
-   * Saves the attendee list
+   * Saves the attendee list on the published AND draft rows without
+   * publishing the draft. Writing straight to the rows through the db layer
+   * avoids the document service's publish path, so unpublished draft edits
+   * stay unpublished. Both rows are updated so a later publish doesn't
+   * overwrite the attendees with a stale draft list.
    */
   const saveAttendees = async (documentId: string, attendeeIds: number[]) => {
-    await strapi.documents(EVENT_UID).update({
-      documentId,
-      status: "published",
-      data: { attendees: attendeeIds },
-    });
+    const [published, draft] = await Promise.all([
+      strapi.documents(EVENT_UID).findOne({ documentId, status: "published" }),
+      strapi.documents(EVENT_UID).findOne({ documentId, status: "draft" }),
+    ]);
+
+    for (const row of [published, draft]) {
+      if (!row) continue;
+
+      await strapi.db.query(EVENT_UID).update({
+        where: { id: row.id },
+        data: { attendees: { set: attendeeIds } },
+      });
+    }
   };
 
   /** Email failures must never make a (successful) subscription fail. */
