@@ -1,0 +1,15 @@
+{
+  "collectionName": "components_page_hall_reservations",
+  "info": {
+    "displayName": "HallReservation"
+  },
+  "options": {},
+  "attributes": {
+    "hall": {
+      "type": "component",
+      "component": "hall-reservations.hall",
+      "repeatable": true
+    }
+  },
+  "config": {}
+}

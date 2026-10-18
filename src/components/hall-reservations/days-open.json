@@ -1,0 +1,45 @@
+{
+  "collectionName": "components_hall_reservations_days_opens",
+  "info": {
+    "displayName": "DaysOpen"
+  },
+  "options": {},
+  "attributes": {
+    "monday": {
+      "type": "boolean",
+      "required": true,
+      "default": true
+    },
+    "tuesday": {
+      "type": "boolean",
+      "required": true,
+      "default": true
+    },
+    "wednesday": {
+      "type": "boolean",
+      "required": true,
+      "default": true
+    },
+    "thursday": {
+      "type": "boolean",
+      "required": true,
+      "default": true
+    },
+    "friday": {
+      "type": "boolean",
+      "required": true,
+      "default": true
+    },
+    "saturday": {
+      "type": "boolean",
+      "required": true,
+      "default": true
+    },
+    "sunday": {
+      "type": "boolean",
+      "required": true,
+      "default": true
+    }
+  },
+  "config": {}
+}
