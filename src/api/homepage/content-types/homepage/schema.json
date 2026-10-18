@@ -16,7 +16,8 @@
       "components": [
         "page.section",
         "page.banner",
-        "page.big-banner"
+        "page.big-banner",
+        "page.events-section"
       ]
     }
   }

@@ -1,6 +1,7 @@
 import nodemailer from "nodemailer";
 import { getTransporter } from "./transporter";
-import { templates, TemplateName, TemplateDataMap } from "./templates";
+import { renderTemplate } from "./email/render";
+import type { TemplateName, TemplateDataMap } from "./email/definitions";
 
 /**
  * Sends an email using one of the predefined templates.
@@ -17,11 +18,7 @@ export async function sendTemplateEmail<T extends TemplateName>(
 ): Promise<void> {
   if (!to) return;
 
-  const build = templates[templateName] as (d: TemplateDataMap[T]) => {
-    subject: string;
-    html: string;
-  };
-  const { subject, html } = build(data);
+  const { subject, html } = await renderTemplate(templateName, data);
 
   try {
     const transporter = await getTransporter();
