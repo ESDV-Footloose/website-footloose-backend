@@ -145,7 +145,15 @@ export default factories.createCoreController(EVENT_UID, ({ strapi }) => {
       strapi.documents(EVENT_UID).findOne({ documentId, status: "draft" }),
     ]);
 
-    for (const row of [published, draft]) {
+    const hasPendingEdits =
+      !!draft &&
+      !!published &&
+      new Date(draft.updatedAt).getTime() >
+        new Date(published.updatedAt).getTime();
+
+    const rows = hasPendingEdits ? [published, draft] : [draft, published];
+
+    for (const row of rows) {
       if (!row) continue;
 
       await strapi.db.query(EVENT_UID).update({
